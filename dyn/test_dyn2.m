@@ -1,5 +1,4 @@
 % 拉格朗日动力学方程求解测试
-%只有 LagrangianDynamics正确
 %网址：https://www.jianshu.com/p/6d04539f1cfe
 % clc;
 % clear;
@@ -37,7 +36,7 @@
 % inertia_tensor(:,:,1) = inertia_1;
 % inertia_tensor(:,:,2) = inertia_2;
 % inertia_tensor(:,:,3) = inertia_3;
-% % 
+% 
 % [H1,C1,G1] = LagrangianDynamics(dh_params, mass, mass_center, inertia_tensor);
 
 
@@ -97,9 +96,9 @@
 % inertia_tensor(:,:,6) = inertia_6;
 % [h,c,g] = LagrangianDynamics(dh_params, mass, mass_center, inertia_tensor);
 % mdl_puma560;
-% %    eval(['q1(i)=','qr(',num2str(i),')',';']);
-% %      q2(i)=eval(['qr(',num2str(i),')',';']);
-% %      eval(['qk',num2str(i),'=','qr(i)',';']);
+%    eval(['q1(i)=','qr(',num2str(i),')',';']);
+%      q2(i)=eval(['qr(',num2str(i),')',';']);
+%      eval(['qk',num2str(i),'=','qr(i)',';']);
 % gc=p560.gravity(3);
 % % 
 % for i=1:length(qr)
@@ -114,13 +113,13 @@
 %   eval(['Ix',num2str(i),'=','link.I(1,1)+link.m*(link.r(2)^2+link.r(3)^2)',';']);
 %   eval(['Iy',num2str(i),'=','link.I(2,2)+link.m*(link.r(1)^2+link.r(3)^2)',';']);
 %   eval(['Iz',num2str(i),'=','link.I(3,3)+link.m*(link.r(2)^2+link.r(1)^2)',';']);
-%   eval(['Ixy',num2str(i),'=','link.I(1,2)+link.m*(link.r(2)*link.r(1))',';']);
-%   eval(['Ixz',num2str(i),'=','link.I(1,3)+link.m*(link.r(1)*link.r(3))',';']);
-%   eval(['Iyz',num2str(i),'=','link.I(2,3)+link.m*(link.r(2)*link.r(3))',';']);
+%   eval(['Ixy',num2str(i),'=','link.I(1,2)-link.m*(link.r(2)*link.r(1))',';']);
+%   eval(['Ixz',num2str(i),'=','link.I(1,3)-link.m*(link.r(1)*link.r(3))',';']);
+%   eval(['Iyz',num2str(i),'=','link.I(2,3)-link.m*(link.r(2)*link.r(3))',';']);
 % end
 % dh_params = [pi/2,  0,  0,  q1;
 %                0,  a2,  0,  q2;
-%             -pi/2, a3, d3,  q3;
+%             -pi/2, a3, d3, q3;
 %              pi/2,  0, d4,  q4;
 %             -pi/2,  0,  0,  q5;
 %                 0,  0,  0,  q6];
@@ -157,8 +156,8 @@
 % inertia_tensor(:,:,6) = inertia_6;
 % 
 % [h,c,g] = LagrangianDynamics(dh_params, mass, mass_center, inertia_tensor);
-% % h=simplify(h);
-% % vpa(h,2)
+% % % % h=simplify(h);
+% % % % vpa(h,2)
 % for i=1:length(qr)
 %     eval(['q',num2str(i),'=','qn(i)',';']);
 %     eval(['dq',num2str(i),'=','qn(i)',';']);
@@ -167,68 +166,5 @@
 % c=subs(c)
 % g=subs(g)
 % tor=h*qn'+c*qn'+g
-%% dyn_lagr_sym验证
-% syms q1 q2 q3 m1 m2 m3 d2 real;
-% dhtable = [-pi/2, 0,  0, 0; 
-%              pi/2, 0, d2, 0;
-%              0, 0, 0, 0];
-% [D,H,G,fv,fc]=dyn_lagr_sym(dhtable);
 
-
-% end
-% syms a2 a3 d3 d4 real;
-% syms q1 q2 q3 q4 q5 q6 real;
-% dhtable = [pi/2,  0,  0,  0;
-%                0,  a2,  0,  0;
-%             -pi/2, a3, d3,  0;
-%              pi/2,  0, d4,  0;
-%             -pi/2,  0,  0,  0;
-%                 0,  0,  0,  0;
-% %             
-% %             
-% [D,H,G,fv,fc]=dyn_lagr_sym(dhtable);
-% mdl_puma560;
-% %    eval(['q1(i)=','qr(',num2str(i),')',';']);
-% %      q2(i)=eval(['qr(',num2str(i),')',';']);
-% %      eval(['qk',num2str(i),'=','qr(i)',';']);
-% gc=p560.gravity(3);
-% 
-% for i=1:length(qr)
-%   link=p560.links(i);
-%   eval(['a',num2str(i),'=','link.a',';']);
-%   eval(['d',num2str(i),'=','link.d',';']);
-% %   eval(['q',num2str(i),'=','qr(i)',';']);
-%   eval(['m',num2str(i),'=','link.m',';']);
-%   eval(['xc',num2str(i),'=','link.r(1)',';']);
-%   eval(['yc',num2str(i),'=','link.r(2)',';']);
-%   eval(['zc',num2str(i),'=','link.r(3)',';']);
-%   eval(['Ix',num2str(i),'=','link.I(1,1)',';']);
-%   eval(['Iy',num2str(i),'=','link.I(2,2)',';']);
-%   eval(['Iz',num2str(i),'=','link.I(3,3)',';']);
-%   eval(['Ixy',num2str(i),'=','link.I(1,2)',';']);
-%   eval(['Ixz',num2str(i),'=','link.I(1,3)',';']);
-%   eval(['Iyz',num2str(i),'=','link.I(2,3)',';']);
-% end
-% for i=1:length(qn)
-%     eval(['q',num2str(i),'=','qn(i)',';']);
-%     eval(['dq',num2str(i),'=','qn(i)',';']);
-% end
-% D=subs(D)
-% H=subs(H)
-% G=subs(G)
-% tor=D*qn'+H*qn'+G
-% vpa(tor,6)
-
-%% 动力学算法改进验证
-syms a2 a3 d3 d4 real;
-syms q1 q2 q3 q4 q5 q6 real;
-
-dhtable= [pi/2,  0,  0,  0;
-               0,  a2,  0,  0;
-            -pi/2, a3, d3,  0;
-             pi/2,  0, d4,  0;
-            -pi/2,  0,  0,  0;
-                0,  0,  0,  0];
-            
-            
-[D,H,G,fv,fc]=dyn_lagr_sym(dhtable);
+%% dyn_lagr_
