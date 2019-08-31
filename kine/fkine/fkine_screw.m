@@ -10,15 +10,25 @@ if (twrow~=6)||(twcol~=length(q))
     error('输入的参数不规范')
 end
 %% 利用旋量求变换矩阵
-tw=cell(1,twcol);
-T=cell(1,twcol);
+%此处没必要生成元胞数组
+T=eye(4);
 for i=1:twcol
-    tw{i}=Twist('R',twist(1:3,i),twist(4:6,i));
-    T{i}=tw{i}.T(q(i));
-    if i>1
-        T{i}=T{i-1}*T{i};
-    end
+    tw=Twist('R',twist(1:3,i),twist(4:6,i));   %构造旋量
+    T=T*tw.T(q(i));                            %生成变换矩阵
 end
+% tw=cell(1,twcol);
+% T=cell(1,twcol);
+% for i=1:twcol
+%     tw{i}=Twist('R',twist(1:3,i),twist(4:6,i));
+%     T{i}=tw{i}.T(q(i));
+%     if i>1
+%         T{i}=T{i-1}*T{i};
+%     end
+% end
 %% 求Tq
-Tq=T{twcol}*T0;
+if isa(T0,'SE3')
+    T0=T0.T;
+end
+% Tq=T{twcol}*T0;
+Tq=T*T0;
 end
