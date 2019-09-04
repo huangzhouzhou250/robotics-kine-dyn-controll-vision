@@ -10,6 +10,7 @@ classdef JoLink < matlab.mixin.Copyable
         %运动学参数
         w   %关节轴线位置
         r   %关节轴线上一点
+        v   %关节轴线矩
         jointtype  %关节类型，revolute='R', prismatic='P' -- should be an enum
         offset%关节默认偏角
         name  %连杆名字
@@ -27,6 +28,8 @@ classdef JoLink < matlab.mixin.Copyable
         torlim %关节力矩限制
         Tc % 电机库伦摩擦系数 (1x2 or 2x1)
         G  % 电机减速比  
+        %模型参数
+        stl
     end %类的性质
     methods
         function jl=JoLink(varargin)
@@ -58,6 +61,7 @@ classdef JoLink < matlab.mixin.Copyable
                 %运动学参数
                 jl.w=[0 0 1]';
                 jl.r=[0 0 0]';
+                jl.v=[0 0 0];
                 jl.offset=0;
                 jl.flip=false;
                 jl.name='';
@@ -75,6 +79,8 @@ classdef JoLink < matlab.mixin.Copyable
                 jl.torlim=0;
                 jl.Tc=0;
                 jl.G=101;
+                %模型参数
+                jl.stl={};
             elseif nargin==1 && isa(varargin{1},'JoLink')  %需要提取出元胞数组中的连杆
                 %复制对象
                 this = varargin{1};
@@ -91,6 +97,7 @@ classdef JoLink < matlab.mixin.Copyable
                 %设定相关参数
                 opt.w= [];
                 opt.r = [];
+                opt.v=[];
                 opt.G = 0;
                 opt.B = 0;
                 opt.Tc = [0 0];
@@ -105,18 +112,23 @@ classdef JoLink < matlab.mixin.Copyable
                 opt.type = {'revolute', 'prismatic', 'fixed'};
                 opt.flip = false;
                 opt.torlim=0;
-                
+                opt.stl={};
                 [opt,args] = tb_optparse(opt, varargin);
                 
                 if isempty(args)
                     %判断连杆类型
                     if norm(opt.w)==0
                         jl.jointtype='P';
+                        jl.w=[0 0 0]';
+                        jl.r=[0 0 0]';
+                        jl.v=opt.v;
                     else
                         jl.jointtype='R';
+                        jl.w= opt.w;
+                        jl.r= opt.r;
+                        jl.v=cross(jl.r,jl.w);
                     end
-                    jl.w= opt.w;
-                    jl.r= opt.r;
+
                     jl.offset =opt.offset;
                     jl.flip =opt.flip;
                     
@@ -132,6 +144,7 @@ classdef JoLink < matlab.mixin.Copyable
                     jl.B =opt.B;
                     jl.Tc = opt.Tc;
                     jl.torlim=opt.torlim;
+                    jl.stl=opt.stl;
                 end
             end
         end%构造函数
@@ -154,6 +167,76 @@ classdef JoLink < matlab.mixin.Copyable
         
         function logic=islimt(jl,q,qd,qdd,tor)
             %用于判断关节角度，关节角速度，角加速度和力是否超出限制
-        end
+            logic1=0;
+            if q>jl.qlim(2) || q<jl.qlim(1)
+                logic1=logic1+1;
+                fprintf('关节角度超出限制')
+            end
+            if abs(qd)>jl.qdlim 
+                logic1=logic1+1;
+                fprintf('关节角速度超出限制')
+            end
+            if abs(qdd)>jl.qddlim
+                logic1=logic1+1;
+                fprintf('关节角加速度超出限制')
+            end
+            if abs(tor)>jl.torlim
+                logic1=logic1+1;
+                fprintf('关节力矩超出限制')
+            end
+            if logic1>1
+                logic=false;
+            else
+                logic=true;
+            end
+        end%判断是否超出限制
+        
+        function set.rc(jl,input)
+            %设置连杆质心
+            if length(input)~=3
+                error('输入参数有误')
+            end
+            jl.rc=input(:);
+        end%设置rc
+        
+        function set.I(jl,input)
+            %设置连杆转动惯量
+            %input可以为3X3矩阵，3为数组（Ixx,Iyy,Izz）,6维向量
+            %（Ixx,Iyy,Izz,Ixy,Ixz,Iyz）
+            if all(size(input)==[3,3])
+                jl.I=input;
+            elseif length(input)==3
+                jl.I=diag(input);
+            elseif length(input)==6
+                jl.I=[input(1) input(4) input(5);
+                    input(4) input(2) input(6);
+                    input(5) input(6) input(3)];
+            else
+                error('输入数据有误')
+            end
+        end%设置连杆转动惯量
+        
+        function set.Tc(jl,input)
+            %设置电机摩擦系数，输入为1X2或者1X1
+            if length(input)==1
+                jl.Tc=[-abs(input) abs(input)];
+            elseif length(input)==2
+                jl.Tc=input;
+            else
+                error('输入数据有误')
+            end
+                
+        end%设置关节摩擦系数
+        
+        function T=isom(jl,q)
+            %求解刚体的变换矩阵
+            w1=jl.w;
+            w1=w1(:)/norm(w1);
+            r1=jl.r;
+            r1=r1(:);
+            v1=jl.v;
+            v1=v1(:);
+            
+        end%关节刚体变换
     end %method
 end %类的结束
