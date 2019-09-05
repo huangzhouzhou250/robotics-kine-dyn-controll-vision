@@ -3,14 +3,17 @@
 %熊有伦等《机器人学：建模控制与视觉》
 %李泽湘等《机器人学的几何基础》
 %程序参考了Peter Corke的RTB工具箱
-
+%
+%黄洲洲，2019.9.5
 
 classdef JoLink < matlab.mixin.Copyable
     properties
+        
         %运动学参数
         w   %关节轴线位置
         r   %关节轴线上一点
         v   %关节轴线矩
+        theta   %关节变量
         jointtype  %关节类型，revolute='R', prismatic='P' -- should be an enum
         offset%关节默认偏角
         name  %连杆名字
@@ -31,6 +34,7 @@ classdef JoLink < matlab.mixin.Copyable
         %模型参数
         stl
     end %类的性质
+
     methods
         function jl=JoLink(varargin)
             %JoLink的构造函数，用于创建连杆对象
@@ -55,13 +59,15 @@ classdef JoLink < matlab.mixin.Copyable
             %'torlim',tor %关节力矩限制
             % 'Tc',T  ;电机库仑摩擦系数 (1x1 or 2x1), (default [0 0])
             % 'G',G ；电机减速比(default 101)
+
             if nargin==0
                 %创建默认连杆
-                
+
                 %运动学参数
                 jl.w=[0 0 1]';
                 jl.r=[0 0 0]';
-                jl.v=[0 0 0];
+                jl.v=[0 0 0]';
+                jl.theta=0;
                 jl.offset=0;
                 jl.flip=false;
                 jl.name='';
@@ -69,10 +75,12 @@ classdef JoLink < matlab.mixin.Copyable
                 jl.qdlim=pi/2;%rad/s
                 jl.qddlim=0.5;%rad/s^2
                 jl.jointtype='R';
+                
                 %动力学参数
                 jl.m=0;
-                jl.rc=[];
-                jl.I=[];
+                jl.rc=[0 0 0]';
+                jl.I=zeros(3);
+                
                 %电机参数
                 jl.Jm=0;
                 jl.B=0;
@@ -81,6 +89,7 @@ classdef JoLink < matlab.mixin.Copyable
                 jl.G=101;
                 %模型参数
                 jl.stl={};
+
             elseif nargin==1 && isa(varargin{1},'JoLink')  %需要提取出元胞数组中的连杆
                 %复制对象
                 this = varargin{1};
@@ -97,13 +106,14 @@ classdef JoLink < matlab.mixin.Copyable
                 %设定相关参数
                 opt.w= [];
                 opt.r = [];
-                opt.v=[];
-                opt.G = 0;
-                opt.B = 0;
-                opt.Tc = [0 0];
-                opt.Jm = 0;
-                opt.I = [];
-                opt.m = 0;
+                opt.theta=[];
+                opt.v=[];                
+                opt.G = 0;                
+                opt.B = 0;                
+                opt.Tc = [0 0];                
+                opt.Jm = 0;                
+                opt.I = zeros(3,3);                
+                opt.m = 0;                
                 opt.rc = [0 0 0];
                 opt.offset = 0;
                 opt.qlim = [-pi pi];
@@ -118,14 +128,21 @@ classdef JoLink < matlab.mixin.Copyable
                 if isempty(args)
                     %判断连杆类型
                     if norm(opt.w)==0
+                        if isempty(opt.v)
+                            error('连杆参数有误，创建失败')
+                        end
                         jl.jointtype='P';
                         jl.w=[0 0 0]';
                         jl.r=[0 0 0]';
-                        jl.v=opt.v;
+                        jl.v=opt.v(:);
                     else
+                        if isempty(opt.w) || isempty(opt.r)
+                            error('连杆参数有误，创建失败')
+                        end
                         jl.jointtype='R';
-                        jl.w= opt.w;
-                        jl.r= opt.r;
+                        jl.w= opt.w(:);
+                        jl.w=jl.w/norm(jl.w);
+                        jl.r= opt.r(:);
                         jl.v=cross(jl.r,jl.w);
                     end
 
@@ -230,13 +247,38 @@ classdef JoLink < matlab.mixin.Copyable
         
         function T=isom(jl,q)
             %求解刚体的变换矩阵
+            %基于罗德里格斯公式
+            %获取相关求解的变量
             w1=jl.w;
-            w1=w1(:)/norm(w1);
-            r1=jl.r;
-            r1=r1(:);
             v1=jl.v;
-            v1=v1(:);
+            if norm(w1)==0
+                R=eye(3);
+                t=v1*q;
+            else
+                R=eye(3)+skew0(w1)*sin(q)+skew0(w1)*skew0(w1)*(1-cos(q));
+                t=(eye(3)-R)*skew(w1)*v1+w1*w1'*v1*q;
+            end
+            T=[R t;
+                0 0 0 1];
+            function w_skew=skew0(w)
+                %自编的反对称矩阵，为区别与skew命名为skew0
+                if length(w)~=3
+                    error('输入数据有误')
+                end
+                w_skew=[0   -w(3)   w(2);
+                        w(3) 0      -w(1);
+                        -w(2)   w(1)    0];
+            end%反对称矩阵
             
         end%关节刚体变换
+        
+        function display(jl)
+            %输出关节连杆相关参数
+            %
+            disp('关节连杆是旋量方法建立');
+            fprintf('%s : ',inputname(1));
+            disp(['w =[',num2str(jl.w'),'] ' ,' v = [',num2str(jl.v'),'];']);
+        end%display
+        
     end %method
 end %类的结束
