@@ -226,7 +226,7 @@ classdef SerialManu < handle
          end %wÊôĞÔ
          
          function k=get.twist(robot)
-             k=[robot.w robot.v];
+             k=[robot.v robot.w];
          end %wÊôĞÔ
          
          function k=get.serialtype(robot)

@@ -1,7 +1,8 @@
 %求解机器人基于指数积公式的正运动学
-%T=fkinep(robot,q)
+%T=fkinep(robot,q，var)
 %其中robot为基于指数积建立的机器人模型（SerialLink）；
 %q为关节角度；
+%var，'rad'or 'deg'用于规定角度的单位制
 %T为4X4矩阵
 
 %指数积公式的参考文献：
