@@ -120,12 +120,12 @@ classdef JoLink < matlab.mixin.Copyable
                 opt.qdlim =-pi/2;
                 opt.qddlim =0.5;
                 opt.type = {'revolute', 'prismatic', 'fixed'};
-                opt.flip = false;
+                opt.flip = [];
                 opt.torlim=0;
                 opt.stl={};
                 [opt,args] = tb_optparse(opt, varargin);
                 
-                if isempty(args)
+                if ~isempty(args)
                     %判断连杆类型
                     if norm(opt.w)==0
                         if isempty(opt.v)
@@ -154,7 +154,7 @@ classdef JoLink < matlab.mixin.Copyable
                     jl.qddlim =   opt.qddlim;
                     
                     jl.m =opt.m;
-                    jl.r = opt.r;
+                    jl.rc = opt.rc;
                     jl.I = opt.I;
                     jl.Jm =opt.Jm;
                     jl.G =opt.G;
@@ -210,7 +210,9 @@ classdef JoLink < matlab.mixin.Copyable
         
         function set.rc(jl,input)
             %设置连杆质心
-            if length(input)~=3
+            if isempty(input)
+                jl.rc=[];
+            elseif length(input)~=3
                 error('输入参数有误')
             end
             jl.rc=input(:);
@@ -228,6 +230,8 @@ classdef JoLink < matlab.mixin.Copyable
                 jl.I=[input(1) input(4) input(5);
                     input(4) input(2) input(6);
                     input(5) input(6) input(3)];
+            elseif isempty(input)
+                jl.I=[];
             else
                 error('输入数据有误')
             end
@@ -251,6 +255,11 @@ classdef JoLink < matlab.mixin.Copyable
             %获取相关求解的变量
             w1=jl.w;
             v1=jl.v;
+            if jl.flip==true
+                q=-q+jl.offset;
+            elseif jl.flip==false
+                q=q+jl.offset;
+            end
             if norm(w1)==0
                 R=eye(3);
                 t=v1*q;

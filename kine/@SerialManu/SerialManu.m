@@ -1,10 +1,25 @@
 %创建基于指数积公式的串联机器人模型
 %后续可能应用并联机器人和树形机器人的创建
+%robot=SerialManu();创建一个空的机器人
+%robot=SerialManu(robot);复制另外一个机器人，会复制相同的参数
+%robot=SerialManu([jolink1 jolink2],'T0',4X4double,...(option))
+%利用参数创建机器人模型
+%其中[jolink1 jolink2]为JoLink对象矩阵，其具体定义可以参考JoLink类
+%option:
+%'T0',4X4double或SE3，机器人末端执行器的初始位姿,必须赋值
+%'name',char,机器人名称（default,''）
+%'comment',char,机器人相关说明（default,''）
+%'gravity',3X1double,机器人重力加速度方向（default,[0 0 9.81]）
+%'plot3dopt',char,机器人3D绘制的方式（default,{}）暂时还未定义
+%ikineType ，char,机器人你运动学类型（default,{}）暂时还未定义
+
 %关于指数积的内容可以参考一下文献：
 %熊有伦等《机器人学：建模控制与视觉》
 %李泽湘等《机器人学的几何基础》
 %代码可以参考Peter Corke的RTB工具箱
 
+%creator: Huang Zhouzhou  Time:2019/9/6
+%Huazhong University of Science and Technology
 classdef SerialManu < handle 
      properties
          name       %机器人名称
@@ -84,7 +99,7 @@ classdef SerialManu < handle
                  robot.jolinks=[];
                  robot.name='';
                  robot.comment = '';
-                 robot.T0=eye(4);
+                 robot.T0=[];
                  robot.base = eye(4);
                  robot.tool=eye(4);
                  robot.gravity=[0; 0; 9.81];
@@ -112,6 +127,9 @@ classdef SerialManu < handle
                  robot.base = opt.base;
                  robot.tool=opt.tool;
                  robot.gravity=opt.gravity;
+                 if isempty(robot.T0)
+                     error('请输入机器人末端初始位置T0')
+                 end
              else
                  error('输入格式有误');
              end
@@ -121,8 +139,32 @@ classdef SerialManu < handle
          
          function display(robot)
              %输出机器人参数
-             
-         end
+             if robot.n==0 || isempty(robot.n)
+                 disp('    该机器人为空！！！')
+             end
+             disp([robot.name,' : ',num2str(robot.n),'axis , ',robot.serialtype]);
+             disp(robot.comment)
+             disp('+---+---------------------------+---------------------------+-----------+')
+             disp('| j |             w             |              v            |   offset  |')
+             disp('+---+---------------------------+---------------------------+-----------+')
+             for i=1:robot.n
+%                  
+                 disp(['| ',num2str(i),' | ',sprintf('%.4f\t',robot.jolinks(i).w'),'| ',sprintf('%.4f\t',robot.jolinks(i).v'),'| ',...
+                     sprintf('%.4f\t',robot.jolinks(i).offset),'|']);
+             end
+             disp('+---+---------------------------+---------------------------+-----------+')
+             disp('T0:');
+             disp(robot.T0);
+             if ~isequal(robot.base,eye(4))
+                 disp('base:');
+                 disp(robot.base);
+             end
+             if ~isequal(robot.tool,eye(4))
+                 disp('tool:');
+                 disp(robot.tool);
+             end
+         end%输出
+         
          %为从属属性定义set函数
          function k=get.w(robot)
              if robot.n==0
@@ -195,7 +237,44 @@ classdef SerialManu < handle
              end
          end %w属性
          
+         function base=get.base(robot)
+             if isa(robot.base,'SE3')
+                 base=double(robot.base);
+             elseif isempty(robot.base)
+                 base=eye(4);
+             elseif size(robot.base)~=[4,4] || det(robot.base)~=1
+                 error('base输入有误')
+             end
+         end
          
+         function tool=get.tool(robot)
+             if isa(robot.tool,'SE3')
+                 tool=double(robot.tool);
+             elseif isempty(robot.tool)
+                 tool=eye(4);
+             elseif size(robot.tool)~=[4,4] || det(robot.tool)~=1
+                 error('tool输入有误')
+             end
+         end
          
+         function T0=get.T0(robot)
+             if isa(robot.T0,'SE3')
+                 T0=double(robot.T0);
+             elseif isempty(robot.T0)
+                 T0=eye(4);
+             elseif size(robot.T0)~=[4,4] || det(robot.T0)~=1
+                 error('T0输入有误')
+             end
+         end
+         
+         function gravity=get.gravity(robot)
+             if size(robot.gravity)==[1,3]
+                 gravity=robot.gravity';
+             elseif isempty(robot.gravity)
+                 gravity=[0;0;9.81];
+             elseif size(robot.gravity)~=[3,1]
+                 error('gravity 输入有误')
+             end
+         end
      end%methods
 end%类
