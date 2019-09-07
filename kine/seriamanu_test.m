@@ -50,3 +50,21 @@ q=zeros(1,6);
 %     J4=p560p.jacobp(q,'b');
 %     J3-J4
 % end
+
+
+%% 数值迭代解逆解
+%随机点测试
+% q1=rand(10,1)*4*pi-2*pi;
+% q2=rand(10,1)*4*pi-2*pi;
+% q3=rand(10,1)*4*pi-2*pi;
+% q4=rand(10,1)*4*pi-2*pi;
+% q5=rand(10,1)*4*pi-2*pi;
+% q6=rand(10,1)*4*pi-2*pi;
+% for i=1:10
+%     q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
+%     q0=q+rand(6,1)'/20;
+%     Tg=p560p.fkinep(q);
+%     qk=p560p.ikine_num_p(Tg,q0);
+%     T=p560p.fkinep(qk)-Tg
+% end
+
