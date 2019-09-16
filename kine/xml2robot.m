@@ -4,6 +4,7 @@
 %robot输出为机器人结构体（SerialManu）
 %XML文件的编写模板参考puma560.xml
 
+%Creator:Huang Zhouzhou  Time：2019/09/15
 function robot = xml2robot(path)
 %% 读取文件
 robot_xml = parseXML(path); %读取文件，其中存在一定的冗余

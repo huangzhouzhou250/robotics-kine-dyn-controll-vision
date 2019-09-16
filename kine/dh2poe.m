@@ -1,3 +1,8 @@
+%此函数用于将DH模型（SerialLink）转换为指数积模型（SerialManu）
+
+%creator : Huang Zhouzhou Time:2019/09/16
+
+
 function serialmupa=dh2poe(serialLink)
 %用于将DH参数建立的模型，转换为基于指数积的模型
 %% 判断输入的是否为SerialLink
