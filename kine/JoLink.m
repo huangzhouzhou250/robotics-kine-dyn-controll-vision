@@ -123,11 +123,11 @@ classdef JoLink < matlab.mixin.Copyable
                 opt.flip = [];
                 opt.torlim=0;
                 opt.stl={};
-                [opt,args] = tb_optparse(opt, varargin);
+                [opt,~] = tb_optparse(opt, varargin);
                 
-                if ~isempty(args)
+                if length(varargin)>=1
                     %判断连杆类型
-                    if norm(opt.w)==0
+                    if isempty(opt.w)
                         if isempty(opt.v)
                             error('连杆参数有误，创建失败')
                         end
@@ -135,6 +135,7 @@ classdef JoLink < matlab.mixin.Copyable
                         jl.w=[0 0 0]';
                         jl.r=[0 0 0]';
                         jl.v=opt.v(:);
+                        jl.v=jl.v/norm(jl.v);
                     else
                         if isempty(opt.w) || isempty(opt.r)
                             error('连杆参数有误，创建失败')
@@ -162,6 +163,8 @@ classdef JoLink < matlab.mixin.Copyable
                     jl.Tc = opt.Tc;
                     jl.torlim=opt.torlim;
                     jl.stl=opt.stl;
+                else
+                    error('输入为空')
                 end
             end
         end%构造函数

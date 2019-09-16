@@ -242,8 +242,10 @@ classdef SerialManu < handle
                  base=double(robot.base);
              elseif isempty(robot.base)
                  base=eye(4);
-             elseif size(robot.base)~=[4,4] || det(robot.base)~=1
+             elseif size(robot.base)~=[4,4] | det(robot.base)~=1
                  error('base输入有误')
+             else
+                 base=robot.base;
              end
          end
          
@@ -252,8 +254,10 @@ classdef SerialManu < handle
                  tool=double(robot.tool);
              elseif isempty(robot.tool)
                  tool=eye(4);
-             elseif size(robot.tool)~=[4,4] || det(robot.tool)~=1
+             elseif size(robot.tool)~=[4,4] | det(robot.tool)~=1
                  error('tool输入有误')
+             else
+                 tool=robot.tool;
              end
          end
          
@@ -262,8 +266,10 @@ classdef SerialManu < handle
                  T0=double(robot.T0);
              elseif isempty(robot.T0)
                  T0=eye(4);
-             elseif size(robot.T0)~=[4,4] || det(robot.T0)~=1
+             elseif ~(size(robot.T0)==[4,4]) | det(robot.T0)~=1
                  error('T0输入有误')
+             else
+                 T0=robot.T0;
              end
          end
          
