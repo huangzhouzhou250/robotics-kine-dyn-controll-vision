@@ -287,9 +287,17 @@ classdef JoLink < matlab.mixin.Copyable
         function display(jl)
             %输出关节连杆相关参数
             %
-            disp('关节连杆是旋量方法建立');
-            fprintf('%s : ',inputname(1));
-            disp(['w =[',num2str(jl.w'),'] ' ,' v = [',num2str(jl.v'),'];']);
+            if length(jl)==1
+                disp('关节连杆是旋量方法建立');
+                fprintf('%s : ',inputname(1));
+                disp(['w =[',sprintf('%.4f\t',jl.w'),'] ' ,' v = [',sprintf('%.4f\t',jl.v'),'];']);
+            else
+                disp('关节连杆是旋量方法建立');
+                for i=1:length(jl)
+                    fprintf('%s : ',inputname(1));
+                    disp(['w =[',sprintf('%.4f\t',jl(i).w'),'] ' ,' v = [',sprintf('%.4f\t',jl(i).v'),'];']);
+                end
+            end
         end%display
         
     end %method

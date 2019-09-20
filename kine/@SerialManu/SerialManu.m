@@ -183,6 +183,14 @@ classdef SerialManu < handle
              end
          end %vÊôĞÔ
          
+         function k=get.r(robot)
+             if robot.n==0
+                 k=[];
+             else
+                 k = [robot.jolinks.r]';
+             end
+         end %rÊôĞÔ
+         
          function k=get.offset(robot)
              if robot.n==0
                  k=[];
