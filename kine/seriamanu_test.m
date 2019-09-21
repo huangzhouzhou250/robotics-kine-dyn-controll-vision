@@ -104,8 +104,34 @@
 % end
 
 %% ur逆解测试
+%特定位置八组解验证
+% mdl_ur5;
+% UR5=dh2poe(ur5);
+% T=UR5.fkinep([0.8 1.2 1.8 2.3 0.9 2.1]);
+% qk=UR5.ikine_ur_p(T);
+% for i=1:size(qk,1)
+%     TG=UR5.fkinep(qk(i,:));
+%     dis(i)=norm(TG(1:3,4)-T(1:3,4));
+% end
+% dis
+%位置误差在10^-16量级
 
+%随机角度一组解验证
+%此处验证暂时有问题
 mdl_ur5;
 UR5=dh2poe(ur5);
-T=UR5.fkinep([0.8 1.2 1.8 2.3 0.9 2.1]);
-qk=UR5.ikine_ur_p(T)
+q1=rand(10,1)*4*pi-2*pi;
+q2=rand(10,1)*4*pi-2*pi;
+q3=rand(10,1)*4*pi-2*pi;
+q4=rand(10,1)*4*pi-2*pi;
+q5=rand(10,1)*4*pi-2*pi;
+q6=rand(10,1)*4*pi-2*pi;
+for i=1:10
+    q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
+    q0=q+rand(6,1)'/200;
+    Tg=UR5.fkinep(q);
+    qk=UR5.ikine_ur_p(Tg,q0);
+    TG=UR5.fkinep(qk);
+    dis1(i)=norm(qk-q);
+    dis2(i)=norm(TG(1:3,4)-Tg(1:3,4));
+end

@@ -81,7 +81,7 @@ if nargin>2
     end
     n=size(qk,1);
     for i=1:n
-        dis(i)=morm(qk(i,:)-q0);
+        dis(i)=norm(qk(i,:)-q0);
     end
     [~,k]=min(dis);
     qtemp=qk(k,:);
