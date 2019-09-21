@@ -10,7 +10,7 @@ end
 %% 获取机器人相关参数
 r=robot.r;   %各关节轴线经过的点
 w=robot.w;   %关节轴线方向
-link=robot.jolink;
+link=robot.jolinks;
 T0=robot.T0; %机器人末端初始位姿
 twist1=Twist('R',w(1,:),r(1,:));
 twist2=Twist('R',w(2,:),r(2,:));
@@ -22,8 +22,8 @@ twist6=Twist('R',w(6,:),r(6,:));
 %角度1求解
 Ta=Tg/T0;
 p56=twistcross(twist5,twist6);
-p_56=SE3(Ta)*p56;
-[x11,x12]=paden4(twist1,twist2,p56,p_56);
+p_56=Ta*p56;
+[x11,x12]=paden4(twist1,twist2,p56(1:3),p_56(1:3));
 qk(1:4,:)=x11;
 qk(5:8,:)=x12;
 %角度5,6求解
@@ -32,11 +32,12 @@ for i=1:2
     T1_inv=link(1).isom(-q1);
     Tb=T1_inv*Ta;
     w2=w(2,:);
-    vec=Tb*[w2;0];
-    r0=[0 0 0];
+    w2=w2(:);
+    vec=inv(Tb)*[w2;0];
+    r0=[0 0 0]';
     twist51=Twist('R',w(5,:),r0);
     twist61=Twist('R',w(6,:),r0);
-    [x51,x52,x61,x62]=Paden2(twist51,twist61,vec(1:3),w2(1:3),r7);
+    [x51,x52,x61,x62]=Paden2(twist51,twist61,vec(1:3),w2(1:3),r0);
     qk(i*4-3:i*4-2,5)=x51;
     qk(i*4-1:i*4,5)=x52;
     qk(i*4-3:i*4-2,6)=x61;
@@ -57,14 +58,14 @@ for i=1:4
     T2_inv2=link(2).isom(-x22);
     T3_inv1=link(3).isom(-x31);
     T3_inv2=link(3).isom(-x32);
-    Td1=T2_inv1*T3_inv1*Tc;
+    Td1=T3_inv1*T2_inv1*Tc;
     p_rand=[pi sqrt(2) 3]';
     p=Td1*[p_rand;1];
-    x41=Paden1(twist4,p_rand,p);
-    Td2=T2_inv2*T3_inv2*Tc;
+    x41=Paden1(twist4,p_rand,p(1:3));
+    Td2=T3_inv2*T2_inv2*Tc;
     p_rand=[pi sqrt(2) 3]';
     p=Td2*[p_rand;1];
-    x42=Paden1(twist4,p_rand,p);
+    x42=Paden1(twist4,p_rand,p(1:3));
     qk(2*i,2)=x21;
     qk(2*i-1,2)=x22;
     qk(2*i,3)=x31;
@@ -72,9 +73,9 @@ for i=1:4
     qk(2*i,4)=x41;
     qk(2*i-1,4)=x42;
 end
-qk=qk(~any(isnan(q),2),:);
+qk=qk(~any(isnan(qk),2),:);
 
-if nargin==2
+if nargin>2
     if length(q0)~=robot.n
         error('输入参考角有误')
     end

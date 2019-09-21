@@ -107,3 +107,5 @@
 
 mdl_ur5;
 UR5=dh2poe(ur5);
+T=UR5.fkinep([0.8 1.2 1.8 2.3 0.9 2.1]);
+qk=UR5.ikine_ur_p(T)
