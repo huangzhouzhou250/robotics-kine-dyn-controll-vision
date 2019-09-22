@@ -47,12 +47,12 @@
 % end
 
 %随机点,判断正解是否正确
-% q1=rand(10,1)*4*pi-2*pi;
-% q2=rand(10,1)*4*pi-2*pi;
-% q3=rand(10,1)*4*pi-2*pi;
-% q4=rand(10,1)*4*pi-2*pi;
-% q5=rand(10,1)*4*pi-2*pi;
-% q6=rand(10,1)*4*pi-2*pi;
+% q1=rand(10,1)*2*pi-pi;
+% q2=rand(10,1)*2*pi-pi;
+% q3=rand(10,1)*2*pi-pi;
+% q4=rand(10,1)*2*pi-pi;
+% q5=rand(10,1)*2*pi-pi;
+% q6=rand(10,1)*2*pi-pi;
 % 
 % for i=1:10
 %     q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
@@ -70,12 +70,12 @@
 % J2=p560p.jacobp(qn,'t');
 %
 %随机点测试
-% q1=rand(10,1)*4*pi-2*pi;
-% q2=rand(10,1)*4*pi-2*pi;
-% q3=rand(10,1)*4*pi-2*pi;
-% q4=rand(10,1)*4*pi-2*pi;
-% q5=rand(10,1)*4*pi-2*pi;
-% q6=rand(10,1)*4*pi-2*pi;
+% q1=rand(10,1)*2*pi-pi;
+% q2=rand(10,1)*2*pi-pi;
+% q3=rand(10,1)*2*pi-pi;
+% q4=rand(10,1)*2*pi-pi;
+% q5=rand(10,1)*2*pi-pi;
+% q6=rand(10,1)*2*pi-pi;
 % for i=1:10
 %     q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
 %     J1= p560.jacob0(q);
@@ -89,12 +89,12 @@
 
 %% 数值迭代解逆解
 %随机点测试
-% q1=rand(10,1)*4*pi-2*pi;
-% q2=rand(10,1)*4*pi-2*pi;
-% q3=rand(10,1)*4*pi-2*pi;
-% q4=rand(10,1)*4*pi-2*pi;
-% q5=rand(10,1)*4*pi-2*pi;
-% q6=rand(10,1)*4*pi-2*pi;
+% q1=rand(10,1)*2*pi-pi;
+% q2=rand(10,1)*2*pi-pi;
+% q3=rand(10,1)*2*pi-pi;
+% q4=rand(10,1)*2*pi-pi;
+% q5=rand(10,1)*2*pi-pi;
+% q6=rand(10,1)*2*pi-pi;
 % for i=1:10
 %     q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
 %     q0=q+rand(6,1)'/20;
@@ -117,21 +117,21 @@
 %位置误差在10^-16量级
 
 %随机角度一组解验证
-%此处验证暂时有问题
-mdl_ur5;
-UR5=dh2poe(ur5);
-q1=rand(10,1)*4*pi-2*pi;
-q2=rand(10,1)*4*pi-2*pi;
-q3=rand(10,1)*4*pi-2*pi;
-q4=rand(10,1)*4*pi-2*pi;
-q5=rand(10,1)*4*pi-2*pi;
-q6=rand(10,1)*4*pi-2*pi;
-for i=1:10
-    q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
-    q0=q+rand(6,1)'/200;
-    Tg=UR5.fkinep(q);
-    qk=UR5.ikine_ur_p(Tg,q0);
-    TG=UR5.fkinep(qk);
-    dis1(i)=norm(qk-q);
-    dis2(i)=norm(TG(1:3,4)-Tg(1:3,4));
-end
+%位置误差在10^-15量级
+% mdl_ur5;
+% UR5=dh2poe(ur5);
+% q1=rand(10,1)*2*pi-pi;
+% q2=rand(10,1)*2*pi-pi;
+% q3=rand(10,1)*2*pi-pi;
+% q4=rand(10,1)*2*pi-pi;
+% q5=rand(10,1)*2*pi-pi;
+% q6=rand(10,1)*2*pi-pi;
+% for i=1:10
+%     q=[q1(i) q2(i) q3(i) q4(i) q5(i) q6(i)];
+%     q0=q+rand(6,1)'/200;
+%     Tg=UR5.fkinep(q);
+%     qk=UR5.ikine_ur_p(Tg,q0);
+%     TG=UR5.fkinep(qk);
+%     dis1(i)=norm(qk-q);
+%     dis2(i)=norm(TG(1:3,4)-Tg(1:3,4));
+% end

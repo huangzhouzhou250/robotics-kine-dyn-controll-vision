@@ -1,17 +1,22 @@
 %基于指数积的类似于UR系列机器人的逆运动学
+% qk=ikine_ur_p(robot,Tg,q0)
+%robot的要求是234关节平行，5,6相交
+%输入模型的格式为SelialManu
+%输入Tg为目标位姿矩阵
+%q0为参考角度，输入时输出只有一组解
 
-
+%具体求解算法可以参考文档
 function qk=ikine_ur_p(robot,Tg,q0)
 %% 确保输入格式
 if isa(Tg,'SE3')
     Tg=Tg.T;
 end
- 
 %% 获取机器人相关参数
 r=robot.r;   %各关节轴线经过的点
 w=robot.w;   %关节轴线方向
-link=robot.jolinks;
+link=robot.jolinks; %获取相关连杆
 T0=robot.T0; %机器人末端初始位姿
+%构造轴线的旋量，后期可以删掉
 twist1=Twist('R',w(1,:),r(1,:));
 twist2=Twist('R',w(2,:),r(2,:));
 twist3=Twist('R',w(3,:),r(3,:));
@@ -26,6 +31,7 @@ p_56=Ta*p56;
 [x11,x12]=paden4(twist1,twist2,p56(1:3),p_56(1:3));
 qk(1:4,:)=x11;
 qk(5:8,:)=x12;
+
 %角度5,6求解
 for i=1:2
     q1=qk(4*i,1);
@@ -43,6 +49,7 @@ for i=1:2
     qk(i*4-3:i*4-2,6)=x61;
     qk(i*4-1:i*4,6)=x62;
 end
+% 角度234求解
 for i=1:4
     q1=qk(2*i,1);
     T1_inv=link(1).isom(-q1);
@@ -75,6 +82,7 @@ for i=1:4
 end
 qk=qk(~any(isnan(qk),2),:);
 
+%从八组解中选取离参考解中最近的
 if nargin>2
     if length(q0)~=robot.n
         error('输入参考角有误')
