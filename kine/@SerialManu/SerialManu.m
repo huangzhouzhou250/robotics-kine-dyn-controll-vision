@@ -89,6 +89,8 @@ classdef SerialManu < handle
              opt.T0=[];
              opt.plot3dopt = {};
              opt.ikine = {};
+             opt.faces={};
+             opt.points={};
 
              
              [opt,arg] = tb_optparse(opt, varargin);
@@ -115,7 +117,9 @@ classdef SerialManu < handle
                  robot.base = this.base;
                  robot.tool=this.tool;
                  robot.gravity=this.gravity;       
-                 robot.plot3dopt=this.gravity;
+                 robot.plot3dopt=this.plot3dopt;
+                 robot.faces=this.faces;
+                 robot.points=this.points;
              elseif nargin>=2 &&  isa(arg{1},'JoLink')
                  %根据参数创建串联机器人
                  Link=arg{1};
@@ -127,6 +131,8 @@ classdef SerialManu < handle
                  robot.base = opt.base;
                  robot.tool=opt.tool;
                  robot.gravity=opt.gravity;
+                 robot.faces=opt.faces;
+                 robot.points=opt.points;
                  if isempty(robot.T0)
                      error('请输入机器人末端初始位置T0')
                  end

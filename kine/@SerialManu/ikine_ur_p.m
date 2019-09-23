@@ -80,7 +80,7 @@ for i=1:4
     qk(2*i,4)=x41;
     qk(2*i-1,4)=x42;
 end
-qk=qk(~any(isnan(qk),2),:);
+qk=qk(~any(isnan(qk),2),:); %排除不可行解
 
 %从八组解中选取离参考解中最近的
 if nargin>2
