@@ -3,7 +3,7 @@ function Tor=idyna_nr_mdh(robot,q,qd,qdd,gravity,f_end)
 %目前只支持数字解。
 % Tor=idyna_nr_mdh(robot,q,qd,qdd,gravity,f_end)
 %输入robot为机器人模型，包含有运动学参数和动力学参数；
-%输入q为关节角度（1XN），qd为关节角速度,qdd为对应关节角加速度；
+%输入q为关节角度（1XN），qd为关节角加速度,qdd为对应关节角加速度；
 %gravity为重力加速度，f_end为末端执行器施加载荷；
 %这两个在不输入时会选用默认值；
 %输出Torque为关节扭矩。
@@ -36,9 +36,11 @@ r_rela= [];%存储相邻连杆之间距离
 w = zeros(3,1);%初始角速度
 wd = zeros(3,1);%初始角加速度
 vd = grav(:);%初始加速度，重力加速度
+T=SE3(0,0,0);
 for i=1
     link=robot.links(i);
     Ti=link.A(q(i));
+    T=T*Ti;
     switch link.type %根据连杆类型来获取连杆长度d的值
         case 'R'
             d = link.d;
@@ -92,8 +94,9 @@ end
 %求解关节力矩
 %获取关节力和力矩
 fend=fend(:);
-ff=fend(1:3);
-fn=fend(4:6);
+R_end=t2r(T)';
+ff=R_end*fend(1:3); %此处乘以变换矩阵的正确性还需要检验
+fn=R_end*fend(4:6);
 for i=n:-1:1
     link=robot.links(i);%获取连杆结构体
     r=link.r;%获取连杆质心位置

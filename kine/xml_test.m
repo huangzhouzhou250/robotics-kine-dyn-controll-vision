@@ -42,4 +42,4 @@
 %     
 % end
 
-p560xml = xml2robot3d('puma560.xml')
+% p560xml = xml2robot3d('puma560.xml')
