@@ -2,9 +2,9 @@ function [q,qd,qdd]=traj_par(q0,td,qm)
 %抛物线过渡的线性插值，输入为经由点角度序列q0(MxN)和时间序列t
 %时间为相邻角度值之间的过渡时间,M为点数，N为机器人关节数
 %输出为角度序列q，角速度序列qd，角加速度序列qdd
-%qm为每个关节的角度
+%qm为每个关节的角加速度
 %% 判断输入数据是否符合要求
-[q0row,q0col]=size(q0);
+[q0row,q0col]=size(q0);   
 if (q0row-1)~=length(td)
     error('输入时间长度与经由点不对应')
 end
@@ -35,12 +35,12 @@ for i=1:q0row
     for j=1:q0col
         t1(i,j)=(qd1(i+1,j)-qd1(i,j))/(sign(qd1(i+1,j)-qd1(i,j))*qm(j));
         if i<q0row
-        t2(i,j)=td(i)-t1(i,j)/2-t1(i+1,j)/2;
+            t2(i,j)=td(i)-t1(i,j)/2-t1(i+1,j)/2;
         end
     end 
 end
 %% 计算总时间
-t_sum=sum(td)+max(t1(1,:))/2+max(t1(q0row,:));
+t_sum=sum(td)+max(t1(1,:))/2+max(t1(q0row,:))/2;
 
 %% 求解输出
 %准备数据
@@ -54,11 +54,14 @@ qtemp=zeros(20,3);
 for k=1:length(t)
     for j=1:q0col
         %开始阶段
+        if (max(t1(1,:))/2-t1(1,j)/2)<=0
+            qtemp(1,:)=[0 0 q0(1,j) ];
+        end
         if t(k)<(max(t1(1,:))/2-t1(1,j)/2)
-            q(k,j)=q(1,j);
+            q(k,j)=q0(1,j);
             qd(k,j)=0;
             qdd(k,j)=0;
-            qtemp(1,:)=[q(1,j) 0 0 ];
+            qtemp(1,:)=[0 0 q0(1,j)];
         %第一个变速阶段
         elseif (t(k)>=(max(t1(1,:))/2-t1(1,j)/2)) && (t(k)<(max(t1(1,:))/2+t1(1,j)/2))
             ts=t(k)-(max(t1(1,:))/2-t1(1,j)/2);
@@ -86,7 +89,7 @@ for k=1:length(t)
             qd(k,j)=(ts)*qdd_temp+qtemp(2*(q0row)-1,2);
             q(k,j)=1/2*(ts)^2*qdd_temp+qtemp(2*(q0row)-1,3)+qtemp(2*(q0row)-1,2)*ts;
         %结尾阶段
-        elseif (t(k)>(max(t1(1,:))/2+t1(1,j)/2+sum(td))) && (t(k)<t_sum)
+        elseif (t(k)>=(max(t1(1,:))/2+t1(q0row,j)/2+sum(td))) && ((t(k)<t_sum)||(abs(t(k)-t_sum))<10^-4)
             qdd(k,j)=0;
             qd(k,j)=0;
             q(k,j)=q0(q0row,j);
