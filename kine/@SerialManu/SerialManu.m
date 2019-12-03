@@ -1,5 +1,33 @@
-%创建基于指数积公式的串联机器人模型
+%创建基于指数积公式的串联机器人模型类
 %后续可能应用并联机器人和树形机器人的创建
+
+%参数及其说明
+%name,机器人名称，char
+%comment,关于机器人的说明,char
+% T0，机器人末端执行器的初始位姿,SE3或4X4double
+% gravity,机器人所处环境的重力矢量,1X3double
+%base,基坐标系变换,SE3或4X4double
+%tool,工具坐标系变换,SE3或4X4double
+%plot3dopt,机器人3D绘制选项
+%ikinetype,机器人逆运动学类型,默认为0，类UR为1，类PUMA560为2
+%faces机器人三维绘制的面数据；借助STL文件导入
+%points机器人绘制的点数据；借助STL文件导入
+%n，关节数量，double
+%jolinks,构成SerialManu的连杆数组
+%T，当前机器人末端相对于S的位姿矩阵，SE3或4X4double
+%w,关节旋向，为nX3double
+%r,关节上一点，为nX3double
+%v，cross(wi,ri),i为连杆编号
+%twist,[w v];
+%offset,初始状态下各个关节酵素，nX1double
+%qlim，关节角度限制，nX2double
+%qdlim，关节角速度限制，nX1double
+%qddlim，关节角加速度限制，nX1double
+%torlim，关节角度限制，nX1double
+%theta,当前关节角度，nX1double
+%serialtype,机器人关节类型，char
+
+%创建方法
 %robot=SerialManu();创建一个空的机器人
 %robot=SerialManu(robot);复制另外一个机器人，会复制相同的参数
 %robot=SerialManu([jolink1 jolink2],'T0',4X4double,...(option))
@@ -20,6 +48,8 @@
 
 %creator: Huang Zhouzhou  Time:2019/9/6
 %Huazhong University of Science and Technology
+
+
 classdef SerialManu < handle 
      properties
          name       %机器人名称
@@ -284,6 +314,15 @@ classdef SerialManu < handle
                  error('T0输入有误')
              else
                  T0=robot.T0;
+             end
+         end
+         function T=isom(robot,q)
+             if length(q)~=robot.n
+                 error('输入关节角度维数不对')
+             end
+             T=robot.T0;
+             for i=1:robot.n
+                 T=robot.jolinks(i).isom(q(i))*T;
              end
          end
          
