@@ -1,10 +1,14 @@
 %此函数用于将机器人的XML文件
 %在使用时请务必添加函数parseXML
 %path为文件路径和文件名
+
 %robot输出为机器人结构体（SerialManu）
 %XML文件的编写模板参考puma560.xml
 
+%1.0版本
+%读取运动学关节参数，生成SerialManu
 %2.0版本 
+%添加几何文件读取功能
 
 %Creator:Huang Zhouzhou  Time：2019/09/23
 
