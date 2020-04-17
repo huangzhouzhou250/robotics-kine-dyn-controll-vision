@@ -170,14 +170,28 @@ end
 %确定机器人绘图时候的面和点
 P=cell(1,n+1);
 F=cell(1,n+1);
+n_temp=-1;%与参数n_j共同确定关节i的图形
 for i=1:k_geo
     attr_geo=child_geo(i).Attributes;
     [n_link,~,file]=attr_geo.Value;%获取几何文件值
     n_link=str2num(n_link);%获取其对应的连杆i
     [p_link,f_link]=stlRead(file); %获取STL的面和点
     %存储数据
-    P{n_link+1}=[P{n_link+1};p_link];
-    F{n_link+1}=[F{n_link+1};f_link];
+    if n_link~=n_temp
+        n_j=1;
+        P{n_link+1}=p_link;
+        F{n_link+1}=f_link;
+    else
+        n_j=n_j+1;
+        if n_j==2
+            P{n_link+1}={P{n_link+1},p_link};
+            F{n_link+1}={F{n_link+1},f_link};
+        else
+            P{n_link+1}={P{n_link+1}{:},p_link};
+            F{n_link+1}={F{n_link+1}{:},f_link};
+        end
+    end
+    n_temp=n_link;
 end
 robot = SerialManu(jolink,'base',base,'tool',tool,'T0',T0,'name',name_robot,'points',P,'faces',F);
 end

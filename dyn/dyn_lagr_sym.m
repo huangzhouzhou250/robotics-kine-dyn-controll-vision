@@ -17,7 +17,7 @@ function [D,H,G,fv,fc]=dyn_lagr_sym(dhtable)
 %程序参考：ttps://www.jianshu.com/p/6d04539f1cfe
 %% 判断输入是否正确
 [row,col]=size(dhtable);
-if col~=4
+if col~=4  
     error('输入DH参数不符合标准')
 end
 %% 设置符号变量

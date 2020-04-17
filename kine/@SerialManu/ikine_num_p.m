@@ -5,7 +5,7 @@
 function q=ikine_num_p(robot,Tg,q0)
 %% 验证输入是否正确
 %判断输入的模型是否正确
-if isa(robot,'SerialLink')
+if ~isa(robot,'SerialManu')
     error('输入模型不对')
 end
 n=robot.n;

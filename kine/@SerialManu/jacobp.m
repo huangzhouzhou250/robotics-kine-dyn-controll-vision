@@ -7,12 +7,9 @@
 %b，物体坐标系下的雅克比矩阵
 %d，基坐标系下的雅克比矩阵
 
-
-
-
 function J=jacobp(robot,q,var)
 %% 输入判断与选择
-if isa(robot,'SerialLink')
+if ~isa(robot,'SerialManu')
     error('输入模型不对')
 end
 n=robot.n;

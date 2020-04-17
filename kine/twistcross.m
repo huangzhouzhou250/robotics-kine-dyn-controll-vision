@@ -49,7 +49,11 @@ end
 %% 求解交点
 if norm(cross(w1,w2))<10^-5
     %两轴线平行
-    p=[w1;0];
+    if norm(cross((r2-r1),w1))<10^-5
+        error('两直线平行')
+    else
+        p=[w1;0];
+    end
 else
     %相交
     vec=cross(cross(w1,w2),w2);%求与w2且不与w1垂直的向量

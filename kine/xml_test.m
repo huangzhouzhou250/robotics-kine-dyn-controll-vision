@@ -184,3 +184,4 @@
 % n=length(jolink); %获取机器人连杆数
 
 p560xml = xml2robot3d_21('puma560.xml')
+ ur5 = xml2robot3d_21('UR5.xml')
