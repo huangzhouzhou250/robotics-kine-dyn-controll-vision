@@ -36,19 +36,19 @@
 
 % hold on;
 
-[p0,f0]=stlRead('robot/UR5/UR5 - base_1.STL');
-L0=patch('Faces',f0,'Vertices',p0);
-set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
-[p0,f0]=stlRead('robot/UR5/UR5 - joint1_1.STL');
-L0=patch('Faces',f0,'Vertices',p0);
-set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
-[p0,f0]=stlRead('robot/UR5/UR5 - joint2_1.STL');
-L0=patch('Faces',f0,'Vertices',p0);
-set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
-set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
-[p0,f0]=stlRead('robot/UR5/UR5 - joint2_2.STL');
-L0=patch('Faces',f0,'Vertices',p0);
-set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
+% [p0,f0]=stlRead('robot/epsonG5651S/GS651S - base_1.STL');
+% L0=patch('Faces',f0,'Vertices',p0);
+% set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
+% [p0,f0]=stlRead('robot/epsonG5651S/GS651S - joint1_1.STL');
+% L0=patch('Faces',f0,'Vertices',p0);
+% set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
+% [p0,f0]=stlRead('robot/epsonG5651S/GS651S - joint2_1.STL');
+% L0=patch('Faces',f0,'Vertices',p0);
+% set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
+% set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
+% [p0,f0]=stlRead('robot/UR5/UR5 - joint2_2.STL');
+% L0=patch('Faces',f0,'Vertices',p0);
+% set(L0,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none');
 % 
 % [p1,f1]=stlRead('robot/link1.stl');
 % L1=patch('Faces',f1,'Vertices',p1);

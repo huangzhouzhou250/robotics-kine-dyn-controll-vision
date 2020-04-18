@@ -75,7 +75,13 @@ home = uicontrol(func,'String','初始位置','callback',@home_button_press,...
 
 % 导入机器人的xml文件，并初始化相应界面
 function input_button_press(h,dummy)
-global robot;
+global robot joint descar tracj_input  screw_display performance;
+%清楚之前图像的控件
+delete(joint.Children);
+delete(descar.Children);
+delete(tracj_input.Children);
+delete(screw_display.Children);
+delete(performance.Children);
 
 %读取机器人的xml文件，并生成对应的机器人模型
 [filename, pathname] = uigetfile({'*.xml'},'File Selector'); %读取机器人xml文件
@@ -92,9 +98,7 @@ end
 
 %初始化函数，用以初始化界面，机器人零位显示
 function intial
-    global robot;
-    global joint;
-    global descar;
+    global robot joint descar ; 
     n=robot.n;
     %绘制关节角度控制按钮
     LD = 105; % Left, used to set the GUI.
@@ -289,12 +293,17 @@ end
 h=robot.plot(theta);
 
 %修改角度框参数
-q0=theta*180/pi;
 for i=1:n
+    jointtype=robot.jolinks(i).jointtype;
     eval(['global t',num2str(i),'_edit;']);
     eval(['global t',num2str(i),'_slider;']);
-    set(eval(['t',num2str(i),'_edit']),'string',num2str(q0(i)));
-    set(eval(['t',num2str(i),'_slider']),'value',q0(i));
+    if strcmp(jointtype,'R')
+        set(eval(['t',num2str(i),'_edit']),'string',num2str(theta(i)*180/pi));
+        set(eval(['t',num2str(i),'_slider']),'value',theta(i)*180/pi);
+    else
+        set(eval(['t',num2str(i),'_edit']),'string',num2str(theta(i)));
+        set(eval(['t',num2str(i),'_slider']),'value',theta(i));
+    end
 end
 
 %修改末端执行器和位置
@@ -388,51 +397,71 @@ end
 
 %关节1修改函数
 function t1_slider_button_press(h,dummy)
-global t1_edit;
+global t1_edit robot;
 slider_value = round(get(h,'Value'));
 set(t1_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(1)=slider_value*pi/180;
+if strcmp(robot.jolinks(1).jointtype,'R')
+    q0(1)=slider_value*pi/180;
+else
+    q0(1)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
 function t1_edit_button_press(h,dummy)
-global robot t1_edit t1_slider;
+global robot t1_edit t1_slider ;
 qlim=robot.qlim;
 user_entry = check_edit(h,qlim(1,1),qlim(1,2),0,t1_edit);
 set(t1_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(1)=user_entry*pi/180;
+if strcmp(robot.jolinks(1).jointtype,'R')
+    q0(3)=user_entry*pi/180;
+else
+    q0(3)=user_entry;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节2修改函数
 function t2_slider_button_press(h,dummy)
-global t2_edit;
+global t2_edit robot;
 slider_value = round(get(h,'Value'));
 set(t2_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(2)=slider_value*pi/180;
+if strcmp(robot.jolinks(2).jointtype,'R')
+    q0(2)=slider_value*pi/180;
+else
+    q0(2)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
 function t2_edit_button_press(h,dummy)
-global robot t2_edit t2_slider;
+global robot t2_edit t2_slider ;
 qlim=robot.qlim;
 user_entry = check_edit(h,qlim(2,1),qlim(2,2),0,t2_edit);
 set(t2_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(2)=user_entry*pi/180;
+if strcmp(robot.jolinks(2).jointtype,'R')
+    q0(2)=user_entry*pi/180;
+else
+    q0(2)=user_entry;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节3修改函数
 function t3_slider_button_press(h,dummy)
-global t3_edit;
+global t3_edit robot;
 slider_value = round(get(h,'Value'));
 set(t3_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(3)=slider_value*pi/180;
+if strcmp(robot.jolinks(3).jointtype,'R')
+    q0(3)=slider_value*pi/180;
+else
+    q0(3)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
@@ -442,17 +471,25 @@ qlim=robot.qlim;
 user_entry = check_edit(h,qlim(3,1),qlim(3,2),0,t3_edit);
 set(t3_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(3)=user_entry*pi/180;
+if strcmp(robot.jolinks(3).jointtype,'R')
+    q0(3)=user_entry*pi/180;
+else
+    q0(3)=user_entry;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节4修改函数
 function t4_slider_button_press(h,dummy)
-global t4_edit;
+global t4_edit robot;
 slider_value = round(get(h,'Value'));
 set(t4_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(4)=slider_value*pi/180;
+if strcmp(robot.jolinks(4).jointtype,'R')
+    q0(4)=slider_value*pi/180;
+else
+    q0(4)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
@@ -462,37 +499,53 @@ qlim=robot.qlim;
 user_entry = check_edit(h,qlim(4,1),qlim(4,2),0,t4_edit);
 set(t4_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(4)=user_entry*pi/180;
+if strcmp(robot.jolinks(4).jointtype,'R')
+    q0(4)=user_entry*pi/180;
+else
+    q0(4)=user_entry;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节5修改函数
 function t5_slider_button_press(h,dummy)
-global t5_edit;
+global t5_edit robot;
 slider_value = round(get(h,'Value'));
 set(t5_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(5)=slider_value*pi/180;
+if strcmp(robot.jolinks(5).jointtype,'R')
+    q0(5)=slider_value*pi/180;
+else
+    q0(5)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
 function t5_edit_button_press(h,dummy)
 global robot t5_edit t5_slider;
 qlim=robot.qlim;
-user_entry = check_edit(h,qlim(5,1),qlim(5,2),0,t1_edit);
+user_entry = check_edit(h,qlim(5,1),qlim(5,2),0,t5_edit);
 set(t5_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(5)=user_entry*pi/180;
+if strcmp(robot.jolinks(5).jointtype,'R')
+    q0(5)=user_entry*pi/180;
+else
+    q0(5)=user_entry;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节6修改函数
 function t6_slider_button_press(h,dummy)
-global t6_edit;
+global t6_edit robot;
 slider_value = round(get(h,'Value'));
 set(t6_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(6)=slider_value*pi/180;
+if strcmp(robot.jolinks(6).jointtype,'R')
+    q0(6)=slider_value*pi/180;
+else
+    q0(6)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
@@ -502,17 +555,25 @@ qlim=robot.qlim;
 user_entry = check_edit(h,qlim(6,1),qlim(6,2),0,t6_edit);
 set(t6_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(6)=user_entry*pi/180;
+if strcmp(robot.jolinks(6).jointtype,'R')
+    q0(6)=user_entry *pi/180;
+else
+    q0(6)=user_entry ;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节7修改函数
 function t7_slider_button_press(h,dummy)
-global t7_edit;
+global t7_edit robot;
 slider_value = round(get(h,'Value'));
 set(t7_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(7)=slider_value*pi/180;
+if strcmp(robot.jolinks(7).jointtype,'R')
+    q0(7)=slider_value*pi/180;
+else
+    q0(7)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
@@ -522,17 +583,25 @@ qlim=robot.qlim;
 user_entry = check_edit(h,qlim(7,1),qlim(7,2),0,t7_edit);
 set(t7_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(7)=user_entry*pi/180;
+if strcmp(robot.jolinks(7).jointtype,'R')
+    q0(7)=user_entry*pi/180;
+else
+    q0(7)=user_entry ;
+end
 robotanimation(q0,20,'n')
 end
 
 %关节1修改函数
 function t8_slider_button_press(h,dummy)
-global t8_edit;
+global t8_edit robot;
 slider_value = round(get(h,'Value'));
 set(t8_edit,'string',slider_value);
 q0=getappdata(0,'ThetaOld');
-q0(81)=slider_value*pi/180;
+if strcmp(robot.jolinks(8).jointtype,'R')
+    q0(8)=slider_value*pi/180;
+else
+    q0(8)=slider_value;
+end
 robotanimation(q0,20,'n');
 end
 
@@ -542,7 +611,11 @@ qlim=robot.qlim;
 user_entry = check_edit(h,qlim(8,1),qlim(8,2),0,t8_edit);
 set(t8_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
-q0(8)=user_entry*pi/180;
+if strcmp(robot.jolinks(8).jointtype,'R')
+    q0(8)=user_entry*pi/180;
+else
+    q0(8)=user_entry;
+end
 robotanimation(q0,20,'n')
 end
 

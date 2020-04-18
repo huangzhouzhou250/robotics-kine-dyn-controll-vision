@@ -2,8 +2,8 @@
 
 %% 绘制基础框架
 %绘制框架fig
-set(0,'Units','pixels')
-dim = get(0,'ScreenSize');
+set(0,'Units','pixels') 
+dim = get(0,'ScreenSize');%获取屏幕尺寸
 global fig_1;
 fig_1 = figure('doublebuffer','on','Position',[0,35,dim(3)-150,dim(4)-100],...
     'MenuBar','none','Name','POE Robot Drawing',...
@@ -14,8 +14,7 @@ light    %灯光
 daspect([1 1 1])                   
 view(135,25)   %视角
 xlabel('X'),ylabel('Y'),zlabel('Z');
-title('指数积机器人仿真','FontSize',14);
-axis([-800 800 -800 800 -100 1100]);
+title('指数积机器人仿真','FontSize',14);axis([-800 800 -800 800 -100 1100]);
 %绘制图形边框 
 plot3([-800,800],[-800,-800],[-100,-100],'k')
 plot3([-800,-800],[-800,800],[-100,-100],'k')
@@ -24,77 +23,101 @@ plot3([-800,800],[-800,-800],[1100,1100],'k')
 plot3([-800,-800],[-800,800],[1100,1100],'k')
 plot3([-800,-800],[800,800],[-100,1100],'k')
 
+%绘制零点，并绘图句柄存储
+Tr=plot3(0,0,0,'b.');
+
+%存储轨迹数据，用于绘图；使用appdata便于存储与调用
+setappdata(0,'xtrail',0);
+setappdata(0,'ytrail',0);
+setappdata(0,'ztrail',0);
+setappdata(0,'Tr',Tr);
+
+%获取绘图的axes,便于后续调用绘制图形
+fig=fig_1.Children(1);
+setappdata(0,'fig0',fig);
+
+%将robot设置为全局变量，便于调用
 global robot;
 
 %绘制主要功能区 
+
+%关节角度空间面板，用于正运动学演示，设置和显示关节角度
 global joint;
 joint = uipanel(fig_1,...
     'Position',[0.02 0.05  0.23 0.4],...
     'Title','关节角度','FontSize',11);
 
+%笛卡尔空间面板，用于显示机器人末端位姿和求解机器人末端位置
 global descar;
 descar=uipanel(fig_1,...
     'Position',[0.02 0.5 0.23 0.2],...
     'Title','末端位姿','FontSize',11);
 
+%功能面板，存储仿真系统的主要功能
 func=uipanel(fig_1,...
     'Position',[0.02 0.9 0.3 0.1],...
      'FontSize',11,'BorderType','none');
  
+ %轨迹导入面板，用于导入关节角度轨迹和末端轨迹
 global tracj_input;
 tracj_input=uipanel(fig_1,...
     'Position',[0.02 0.72 0.23 0.13],...
     'Title','轨迹导入','FontSize',11);
 
+%旋量显示面板，用于显示关节实时旋量，帮助佐证某些数据正确性
 global screw_display;
 screw_display=uipanel(fig_1,...
     'Position',[0.8 0.1 0.2 0.4],...
     'Title','实时旋量','FontSize',11);
 
+%运动学性能显示面板，显示运动学性能数据和
 global performance;
 performance=uipanel(fig_1,...
     'Position',[0.8 0.55 0.2 0.3],...
     'Title','运动学性能','FontSize',11);
 
+%仿真系统主要功能；具体函数实现查看相关函数
 input = uicontrol(func,'String','导入','callback',@input_button_press,...
-    'Position',[0 20 30 30]);
+    'Position',[0 20 30 30]);          %模型导入功能
 
+trail_delete = uicontrol(func,'String','删除轨迹','callback',@trail_delete_button_press,...
+    'Position',[60 20 50 30]);          %轨迹清除功能
 
+home = uicontrol(func,'String','初始位置','callback',@home_button_press,...
+    'Position',[120 20 50 30]);         %回到初始位置
+
+% 导入机器人的xml文件，并初始化相应界面
 function input_button_press(h,dummy)
-global robot;
-global fig_1;
-[filename, pathname] = uigetfile({'*.xml'},'File Selector');
-robot=xml2robot3d_21(filename);
-% loaddata;
-intial;
-end
+global robot joint descar tracj_input  screw_display performance;
+%清除之前图像面板中的控件并保留面板
+delete(joint.Children);
+delete(descar.Children);
+delete(tracj_input.Children);
+delete(screw_display.Children);
+delete(performance.Children);
 
-%数据载入函数
-function loaddata
-global robot
-n=robot.n;
-setappdata(0,'F0',robot.faces{1});
-setappdata(0,'P0',robot.points{1});
-for i=1:n
-    eval(['F',num2str(i),'=','robot.faces{i+1}',';']);
-    eval(['P',num2str(i),'=','robot.points{i+1}',';']);
-    setappdata(0,char(['F',num2str(i)]),robot.faces{i+1});   %此处由于第二项必须为char型数据
-    setappdata(0,char(['P',num2str(i)]),robot.points{i+1}); 
-end
+%读取机器人的xml文件，并生成对应的机器人模型
+[filename, pathname] = uigetfile({'*.xml'},'File Selector'); %读取机器人xml文件
+robot=xml2robot3d_21(filename);%生成机器人的函数
+
+% 初始化界面并记录关节零位位置
+intial;
+
+%获取并记录初始位置
+q0=robot.offset;
+setappdata(0,'ThetaOld',q0);
+% robotanimation([1 1 1 1 1 1],50,'y'); %用于检查动画函数是否正确
 end
 
 %初始化函数，用以初始化界面，机器人零位显示
 function intial
-global robot;
-global joint;
-global descar;
-n=robot.n;
-robot.plot([ 0 0 0 0 0 0])
-%绘制关节角度控制按钮
-LD = 105; % Left, used to set the GUI.
-HT = 18;  % Height
-BT = 210; % Bottom
-qlim=robot.qlim;
+    global robot joint descar ; 
+    n=robot.n;
+    %绘制关节角度控制按钮
+    LD = 105; % Left, used to set the GUI.
+    HT = 18;  % 控件高度
+    BT = 210; % Bottom
+    qlim=robot.qlim;
     for i=1:n
         temp_sl=uicontrol(joint,'style','slider',...
             'Max',qlim(i,2),'Min',qlim(i,1),'Value',0,...
@@ -129,29 +152,29 @@ qlim=robot.qlim;
         'Position',[115 10 50 20]);
     jiaodu_text = uibutton(descar,'style','text',...
         'String','角度(deg)','FontSize',10,...
-        'Position',[7 90 50 18]); 
+        'Position',[7 90 50 HT]); 
     tdr_text = uibutton(descar,'style','text',...
         'String','r',...
-        'Position',[10 70 30 18]);
+        'Position',[10 70 30 HT]);
     global tdr_edit tdp_edit tdyo_edit tdx_edit tdy_edit tdz_edit;
     tdr_edit = uicontrol(descar,'style','edit',...
         'String',0,...
         'callback',@tdr_edit_button_press,...
-        'Position',[30 70 30 18]);
+        'Position',[30 70 30 HT]);
     tdp_text = uibutton(descar,'style','text',...
         'String','p',...
-        'Position',[10 45 30 18]);
+        'Position',[10 45 30 HT]);
     tdp_edit = uicontrol(descar,'style','edit',...
         'String',0,...
         'callback',@tdp_edit_button_press,...
-        'Position',[30 45 30 18]);
+        'Position',[30 45 30 HT]);
     tdyo_text = uibutton(descar,'style','text',...
         'String','y',...
-        'Position',[10 20 30 18]);
+        'Position',[10 20 30 HT]);
     tdyo_edit = uicontrol(descar,'style','edit',...
         'String',0,...
         'callback',@tdyo_edit_button_press,...
-        'Position',[30 20 30 18]);
+        'Position',[30 20 30 HT]);
     %末端执行器位置绘制
     weizhi_text = uibutton(descar,'style','text',...
         'String','位置(mm)','FontSize',10,...
@@ -228,8 +251,9 @@ qlim=robot.qlim;
         eval(['twist',num2str(i),'_edit=temp_edit;']);
     end
     
-    %运动学性能控件绘制
+    %运动学性能控件绘制 需要补充
     global performance;
+    %可操作度
     manipulability_text=uibutton(performance,'style','text',...
         'String','manipulability',...
         'Position',[40 150 20 18]);
@@ -238,68 +262,73 @@ qlim=robot.qlim;
         'callback','@manipulability_edit_button_press',...
         'Position',[90 150 40 18],...
         'max',2);
-    manipulability_plot=uicontrol(performance,'String','显示','callback',@manipulability_button_press,...
+    manipulability_plot=uicontrol(performance,'String','显示','callback',@manipulability_plot_button_press,...
         'Position',[150 150 40 18]);
-
+    manipulability_clear=uicontrol(performance,'String','清除','callback',@manipulability_clear_button_press,...
+        'Position',[200 150 40 18]);
+    %条件数
     condition_number_text=uibutton(performance,'style','text',...
-        'String','condition_number',...
-        'Position',[40 150-30 20 18]);
-   condition_number_edit=uicontrol(performance,'style','edit',...
+        'String','condition number',...
+        'Position',[30 150-30 20 18]);
+    condition_number_edit=uicontrol(performance,'style','edit',...
         'String',[0 0 0 0 0 0],...
         'callback','@condition_number_edit_button_press',...
         'Position',[90 150-30 40 18],...
         'max',2);
-   condition_number_plot=uicontrol(performance,'String','显示','callback',@condition_number_button_press,...
+    condition_number_plot=uicontrol(performance,'String','显示','callback',@condition_plot_number_button_press,...
         'Position',[150 150-30 40 18]);
+    condition_number_clear=uicontrol(performance,'String','清除','callback',@condition_clear_number_button_press,...
+        'Position',[200 150-30 40 18]);
     
      %绘制零位位置
-    robotplot([0 0 0 0 0 0]);
-
-     %图形绘制的另一种方式
-%     F00=getappdata(0,'F0');
-%     P00=getappdata(0,'P0');
-%     L0=patch('Faces',F00,'Vertices',P00);
-%     set(L0,'FaceColor',[1 0 0],'EdgeColor','none');
-%     H(1)=L0;
-%     for i=1:n
-%         temp1=getappdata(0,char(['F',num2str(i)]));
-%         eval(['F',num2str(i),'0','=','temp1',';']);
-%         temp2=getappdata(0,char(['P',num2str(i)]));
-%         eval(['P',num2str(i),'0','=','temp2',';']);
-%         temp3=patch('Faces',eval(['F',num2str(i),'0']),'Vertices',eval(['P',num2str(i),'0']));
-%         eval(['L',num2str(i),'0=','temp3;']);
-%         H(i+1)=eval(['L',num2str(i),'0']);
-%     end
-%     Tr = plot3(0,0,0,'b.');
-%     H=[H,Tr];
-%     setappdata(0,'patch_h',H);
-%     setappdata(0,'ThetaOld',zeros(1,n));
-
+    robotplot([robot.offset],'n');
 end
 
 %绘图函数，绘制指定位姿的下的机器人三维模型
-function robotplot(theta)
+function robotplot(theta,trail)
 %输入theta为机器人的姿态
-%输入后会修改机器人各个参数
+%输入后会修改机器人各个参数，并绘制机器人的三维图形
+if nargin==1
+    trail='n';
+elseif nargin==2
+    if ~strcmp(trail,'n') && ~strcmp(trail,'y')
+        error('轨迹类型输入有误')
+    end
+else
+    error('输入有误');
+end
+
 global robot;
-global fig_1;
 n=robot.n;
 %绘制图形
-robot.plot(theta);
+fig=getappdata(0,'fig0');
+axes(fig);
+child=fig.Children;
+child_length=length(child);
+if child_length>8
+    delete(child(1:child_length-8));
+end
+h=robot.plot(theta);
 
 %修改角度框参数
-q0=theta*180/pi;
 for i=1:n
+    jointtype=robot.jolinks(i).jointtype;
     eval(['global t',num2str(i),'_edit;']);
     eval(['global t',num2str(i),'_slider;']);
-    set(eval(['t',num2str(i),'_edit']),'string',num2str(q0(i)));
-    set(eval(['t',num2str(i),'_slider']),'value',q0(i));
+    if strcmp(jointtype,'R')
+        set(eval(['t',num2str(i),'_edit']),'string',num2str(theta(i)*180/pi));
+        set(eval(['t',num2str(i),'_slider']),'value',theta(i)*180/pi);
+    else
+        set(eval(['t',num2str(i),'_edit']),'string',num2str(theta(i)));
+        set(eval(['t',num2str(i),'_slider']),'value',theta(i));
+    end
 end
 
 %修改末端执行器和位置
 TE=robot.fkinep(theta);
 [R,p]=tr2rt(TE);
 rpy=tr2rpy(R);
+rpy=rpy*180/pi;
 global tdr_edit tdx_edit tdy_edit tdp_edit  tdyo_edit tdz_edit;
 set(tdx_edit,'string',num2str(p(1)));
 set(tdy_edit,'string',num2str(p(2)));
@@ -308,12 +337,339 @@ set(tdr_edit,'string',num2str(rpy(1)));
 set(tdp_edit,'string',num2str(rpy(2)));
 set(tdyo_edit,'string',num2str(rpy(3)));
 
-
+if trail=='y'
+    x_trail = getappdata(0,'xtrail');
+    y_trail = getappdata(0,'ytrail');
+    z_trail = getappdata(0,'ztrail');
+    xdata = [x_trail p(1)];
+    ydata = [y_trail p(2)];
+    zdata = [z_trail p(3)];
+    setappdata(0,'xtrail',xdata); 
+    setappdata(0,'ytrail',ydata); 
+    setappdata(0,'ztrail',zdata);
+    Tr=getappdata(0,'Tr');
+    set(Tr,'xdata',xdata,'ydata',ydata,'zdata',zdata);
 end
-%按钮函数
+end
+
+%绘图函数，绘制机器人的动画并改变相应控件值
+function robotanimation(theta,n,trail,method)
+%theta为机器人的目标关节角度值
+%n为插入的步数
+%trail用于确定是否显示轨迹
+%trail='n' 不显示轨迹
+%trail='y' 显示轨迹
+%method用于确定机器人起始点与目标点之间的插值方式
+%1 使用五次插值函数(traj_5)
+%2 使用三次插值函数(tracj_3)
+%3 使用梯形插值函数(tracj_t)
+
+global robot;
+
+%判断输入变量个数
+if nargin==1
+    n=30;
+    trail='n';
+    method=1;
+elseif nargin==2
+    trail='n';
+    method=1;
+elseif nargin==3
+    method=1;
+    if ~strcmp(trail,'n')&&~strcmp(trail,'y')
+        error('trail类型输入有误')
+    end
+elseif nargin==4
+    if method~=1||method~=2||method~=3
+        error('method类型输入有误')
+    end
+end
+
+%判断输入角度长度是否正确
+n_robot=robot.n;
+if length(theta)~=n_robot
+    error('角度输入长度有误')
+end
+
+%读取之前角度
+theta0=getappdata(0,'ThetaOld');
+
+if method==1
+    q=traj_5(theta0,theta,n);
+elseif method==2
+    q=tracj_3(theta0,theta,n);
+elseif method==3
+    qdd=robot.qddlim;
+    q=tracj_t(theta0,theta,5,'A',qdd,n);
+end
+n_plot=size(q,1);
+
+for i=2:1:n_plot
+    q_temp=q(i,:);
+    robotplot(q_temp,trail);
+    drawnow;
+end
+setappdata(0,'ThetaOld',theta);
+end
+
+%关节1修改函数
+function t1_slider_button_press(h,dummy)
+global t1_edit robot;
+slider_value = round(get(h,'Value'));
+set(t1_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(1).jointtype,'R')
+    q0(1)=slider_value*pi/180;
+else
+    q0(1)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t1_edit_button_press(h,dummy)
+global robot t1_edit t1_slider ;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(1,1),qlim(1,2),0,t1_edit);
+set(t1_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(1).jointtype,'R')
+    q0(3)=user_entry*pi/180;
+else
+    q0(3)=user_entry;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节2修改函数
+function t2_slider_button_press(h,dummy)
+global t2_edit robot;
+slider_value = round(get(h,'Value'));
+set(t2_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(2).jointtype,'R')
+    q0(2)=slider_value*pi/180;
+else
+    q0(2)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t2_edit_button_press(h,dummy)
+global robot t2_edit t2_slider ;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(2,1),qlim(2,2),0,t2_edit);
+set(t2_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(2).jointtype,'R')
+    q0(2)=user_entry*pi/180;
+else
+    q0(2)=user_entry;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节3修改函数
+function t3_slider_button_press(h,dummy)
+global t3_edit robot;
+slider_value = round(get(h,'Value'));
+set(t3_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(3).jointtype,'R')
+    q0(3)=slider_value*pi/180;
+else
+    q0(3)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t3_edit_button_press(h,dummy)
+global robot t3_edit t3_slider;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(3,1),qlim(3,2),0,t3_edit);
+set(t3_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(3).jointtype,'R')
+    q0(3)=user_entry*pi/180;
+else
+    q0(3)=user_entry;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节4修改函数
+function t4_slider_button_press(h,dummy)
+global t4_edit robot;
+slider_value = round(get(h,'Value'));
+set(t4_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(4).jointtype,'R')
+    q0(4)=slider_value*pi/180;
+else
+    q0(4)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t4_edit_button_press(h,dummy)
+global robot t4_edit t4_slider;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(4,1),qlim(4,2),0,t4_edit);
+set(t4_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(4).jointtype,'R')
+    q0(4)=user_entry*pi/180;
+else
+    q0(4)=user_entry;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节5修改函数
+function t5_slider_button_press(h,dummy)
+global t5_edit robot;
+slider_value = round(get(h,'Value'));
+set(t5_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(5).jointtype,'R')
+    q0(5)=slider_value*pi/180;
+else
+    q0(5)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t5_edit_button_press(h,dummy)
+global robot t5_edit t5_slider;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(5,1),qlim(5,2),0,t5_edit);
+set(t5_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(5).jointtype,'R')
+    q0(5)=user_entry*pi/180;
+else
+    q0(5)=user_entry;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节6修改函数
+function t6_slider_button_press(h,dummy)
+global t6_edit robot;
+slider_value = round(get(h,'Value'));
+set(t6_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(6).jointtype,'R')
+    q0(6)=slider_value*pi/180;
+else
+    q0(6)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t6_edit_button_press(h,dummy)
+global robot t6_edit t6_slider;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(6,1),qlim(6,2),0,t6_edit);
+set(t6_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(6).jointtype,'R')
+    q0(6)=user_entry *pi/180;
+else
+    q0(6)=user_entry ;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节7修改函数
+function t7_slider_button_press(h,dummy)
+global t7_edit robot;
+slider_value = round(get(h,'Value'));
+set(t7_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(7).jointtype,'R')
+    q0(7)=slider_value*pi/180;
+else
+    q0(7)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t7_edit_button_press(h,dummy)
+global robot t7_edit t7_slider;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(7,1),qlim(7,2),0,t7_edit);
+set(t7_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(7).jointtype,'R')
+    q0(7)=user_entry*pi/180;
+else
+    q0(7)=user_entry ;
+end
+robotanimation(q0,20,'n')
+end
+
+%关节1修改函数
+function t8_slider_button_press(h,dummy)
+global t8_edit robot;
+slider_value = round(get(h,'Value'));
+set(t8_edit,'string',slider_value);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(8).jointtype,'R')
+    q0(8)=slider_value*pi/180;
+else
+    q0(8)=slider_value;
+end
+robotanimation(q0,20,'n');
+end
+
+function t8_edit_button_press(h,dummy)
+global robot t8_edit t8_slider;
+qlim=robot.qlim;
+user_entry = check_edit(h,qlim(8,1),qlim(8,2),0,t8_edit);
+set(t8_slider,'Value',user_entry);
+q0=getappdata(0,'ThetaOld');
+if strcmp(robot.jolinks(8).jointtype,'R')
+    q0(8)=user_entry*pi/180;
+else
+    q0(8)=user_entry;
+end
+robotanimation(q0,20,'n')
+end
+
+%修改末端位置函数 
 function tdx_edit_button_press(h,dummy)
 
 end
+
+%轨迹删除函数
+function trail_delete_button_press(h,dummy)
+
+Tr=getappdata(0,'Tr');%获取轨迹
+
+%将轨迹的值设置为0
+setappdata(0,'xtrail',0);
+setappdata(0,'ytrail',0);
+setappdata(0,'ztrail',0);
+%清除轨迹
+set(Tr,'xdata',0,'ydata',0,'zdata',0);
+end
+
+%回到零位位置
+function home_button_press(h,dummy)
+global robot;
+robotplot(robot.offset);
+Tr=getappdata(0,'Tr');%获取轨迹
+
+%将轨迹的值设置为0
+setappdata(0,'xtrail',0);
+setappdata(0,'ytrail',0);
+setappdata(0,'ztrail',0);
+%清除轨迹
+set(Tr,'xdata',0,'ydata',0,'zdata',0);
+setappdata(0,'ThetaOld',robot.offset);
+end
+
+%控件生成函数
 function [hout,ax_out] = uibutton(varargin)
         %uibutton: Create pushbutton with more flexible labeling than uicontrol.
         % Usage:
@@ -481,5 +837,33 @@ function [hout,ax_out] = uibutton(varargin)
             hout = h;
         end
 %%
-  end
-
+end
+%控件相关设置函数
+function user_entry = check_edit(h,min_v,max_v,default,h_edit)
+        % This function will check the value typed in the text input box
+        % against min and max values, and correct errors.
+        %
+        % h: handle of gui
+        % min_v min value to check
+        % max_v max value to check
+        % default is the default value if user enters non number
+        % h_edit is the edit value to update.
+        %
+        user_entry = str2double(get(h,'string'));
+        if isnan(user_entry)
+            errordlg(['You must enter a numeric value, defaulting to ',num2str(default),'.'],'Bad Input','modal')
+            set(h_edit,'string',default);
+            user_entry = default;
+        end
+        %
+        if user_entry < min_v
+            errordlg(['Minimum limit is ',num2str(min_v),' degrees, using ',num2str(min_v),'.'],'Bad Input','modal')
+            user_entry = min_v;
+            set(h_edit,'string',user_entry);
+        end
+        if user_entry > max_v
+            errordlg(['Maximum limit is ',num2str(max_v),' degrees, using ',num2str(max_v),'.'],'Bad Input','modal')
+            user_entry = max_v;
+            set(h_edit,'string',user_entry);
+        end
+end

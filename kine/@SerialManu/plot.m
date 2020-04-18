@@ -33,10 +33,12 @@ for i=1:n
         tw_vec=twist(i,:);
         tw=Twist(tw_vec);
         T=T*SE3(tw.T(q(i)));
-        V_t=T*V_o';
-        L=patch('Faces',F,'Vertices',V_t');
-        set(L,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none')
-        h=[h,L];
+        if ~isempty(V_o)
+            V_t=T*V_o';
+            L=patch('Faces',F,'Vertices',V_t');
+            set(L,'FaceColor',[0.5 0.5 0.5],'EdgeColor','none')
+            h=[h,L];
+        end
     else
         tw_vec=twist(i,:);
         tw=Twist(tw_vec);

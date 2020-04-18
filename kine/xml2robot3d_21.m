@@ -67,22 +67,22 @@ for i=1:k_joink-3
         link_value=[link_value;link(j).Value];
     end
     if strcmp(link_name(link_length),'w')
-        if link_length==3
+        if link_length==3      %只输入旋量的w和r
             joint_r=str2num(link_value{2});
             joint_w=str2num(link_value{3});
             joint_offset=0;
             joint_qlim=[-180 180];
             joint_qdlim=135;
             joint_qddlim=120;
-        elseif link_length==4
-            if strcmp(link_name{2},'offset')
+        elseif link_length==4 
+            if strcmp(link_name{2},'offset')%只输入旋量的w和r和offset
                 joint_r=str2num(link_value{3});
                 joint_w=str2num(link_value{4});
                 joint_offset=str2num(link_value{2});
                 joint_qlim=[-180 180];
                 joint_qdlim=135;
                 joint_qddlim=120;
-            elseif strcmp(link_name{2},'qlim')
+            elseif strcmp(link_name{2},'qlim')%只输入旋量的w和r和qlim
                 joint_r=str2num(link_value{3});
                 joint_w=str2num(link_value{4});
                 joint_qlim=str2num(link_value{2});
@@ -92,14 +92,14 @@ for i=1:k_joink-3
             else
                 error('输入属性名称有误');
             end
-        elseif link_length==5
+        elseif link_length==5 %只输入旋量的w和r和offset,qlim
             joint_r=str2num(link_value{4});
             joint_w=str2num(link_value{5});
             joint_qlim=str2num(link_value{3});
             joint_offset=str2num(link_value{2});
             joint_qdlim=135;
             joint_qddlim=120;
-        elseif link_length==7
+        elseif link_length==7%只输入旋量的w和r和offset,qlim,qdlim,qddlim
             joint_r=str2num(link_value{6});
             joint_w=str2num(link_value{7});
             joint_qlim=str2num(link_value{5});
@@ -111,21 +111,21 @@ for i=1:k_joink-3
         end
         jolink(i)=JoLink('w',joint_w,'r',joint_r,'offset',joint_offset,'qlim',...
             joint_qlim,'qdlim',joint_qdlim,'qddlim',joint_qddlim);
-    elseif strcmp(link_name(link_length),'v')
-        if link_length==2
+    elseif strcmp(link_name(link_length),'v') %移动关节
+        if link_length==2 %只输入v
             joint_v=str2num(link_value{2});
             joint_offset=0;
-            joint_qlim=0.3;%单位为m
+            joint_qlim=0.3;         %单位为m
             joint_qdlim=1;
             joint_qddlim=1;
-        elseif link_length==3
+        elseif link_length==3       %输入v和offset
             if strcmp(link_name{2},'offset')
                 joint_v=str2num(link_value{3});
                 joint_offset=str2num(link_value{2});
                 joint_qlim=0.3;%单位为m
                 joint_qdlim=1;
                 joint_qddlim=1;
-            elseif strcmp(link_name{2},'qlim')
+            elseif strcmp(link_name{2},'qlim')      %输入v和qlim
                 joint_v=str2num(link_value{3});
                 joint_offset=0;
                 joint_qlimstr2num(link_value{2});%单位为m

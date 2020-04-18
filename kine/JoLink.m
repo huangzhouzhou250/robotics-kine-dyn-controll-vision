@@ -127,7 +127,7 @@ classdef JoLink < matlab.mixin.Copyable
                 
                 if length(varargin)>=1
                     %判断连杆类型
-                    if isempty(opt.w)
+                    if norm(opt.w)==0
                         if isempty(opt.v)
                             error('连杆参数有误，创建失败')
                         end
