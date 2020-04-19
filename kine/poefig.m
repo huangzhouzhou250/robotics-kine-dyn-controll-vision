@@ -433,9 +433,9 @@ user_entry = check_edit(h,qlim(1,1),qlim(1,2),0,t1_edit);
 set(t1_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
 if strcmp(robot.jolinks(1).jointtype,'R')
-    q0(3)=user_entry*pi/180;
+    q0(1)=user_entry*pi/180;
 else
-    q0(3)=user_entry;
+    q0(1)=user_entry;
 end
 robotanimation(q0,20,'n')
 end

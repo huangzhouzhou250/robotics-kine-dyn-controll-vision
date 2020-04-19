@@ -19,19 +19,6 @@ if nargin==4
     argu=argument;
 end
 %% 利用旋量求变换矩阵
-% J=zeros(6,twcol);
-% tw=cell(1,twcol);
-% T=cell(1,twcol);
-% for i=1:twcol
-%     tw{i}=Twist('R',twist(1:3,i),twist(4:6,i));
-%     T{i}=tw{i}.T(q(i));
-%     screw=tw{i}.double';
-%     if i>1 %求解实时旋量
-%         T{i}=T{i-1}*T{i};
-%         screw=SE3(T{i-1}).Ad*screw; 
-%     end
-%     J(:,i)=screw;
-% end
 J=zeros(6,twcol);
 T=eye(4);
 for i=1:twrow

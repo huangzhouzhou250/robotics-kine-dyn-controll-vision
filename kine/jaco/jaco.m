@@ -1,6 +1,6 @@
 function J=jaco(robot,q)
 %求解机器人雅克比矩阵
-%输入robot为机器人结构体，q为机器人关节角度
+%输入robot为机器人结构体（SerialLink），q为机器人关节角度
 %输出J为雅克比矩阵
 q=q(:)';
 n=robot.n;

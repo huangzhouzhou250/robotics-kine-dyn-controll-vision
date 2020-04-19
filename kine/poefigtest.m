@@ -2,8 +2,8 @@
 
 %% 绘制基础框架
 %绘制框架fig
-set(0,'Units','pixels')
-dim = get(0,'ScreenSize');
+set(0,'Units','pixels') 
+dim = get(0,'ScreenSize');%获取屏幕尺寸
 global fig_1;
 fig_1 = figure('doublebuffer','on','Position',[0,35,dim(3)-150,dim(4)-100],...
     'MenuBar','none','Name','POE Robot Drawing',...
@@ -14,8 +14,7 @@ light    %灯光
 daspect([1 1 1])                   
 view(135,25)   %视角
 xlabel('X'),ylabel('Y'),zlabel('Z');
-title('指数积机器人仿真','FontSize',14);
-axis([-800 800 -800 800 -100 1100]);
+title('指数积机器人仿真','FontSize',14);axis([-800 800 -800 800 -100 1100]);
 %绘制图形边框 
 plot3([-800,800],[-800,-800],[-100,-100],'k')
 plot3([-800,-800],[-800,800],[-100,-100],'k')
@@ -23,60 +22,74 @@ plot3([-800,-800],[-800,-800],[-100,1100],'k')
 plot3([-800,800],[-800,-800],[1100,1100],'k')
 plot3([-800,-800],[-800,800],[1100,1100],'k')
 plot3([-800,-800],[800,800],[-100,1100],'k')
+
+%绘制零点，并绘图句柄存储
 Tr=plot3(0,0,0,'b.');
+
+%存储轨迹数据，用于绘图；使用appdata便于存储与调用
 setappdata(0,'xtrail',0);
 setappdata(0,'ytrail',0);
 setappdata(0,'ztrail',0);
 setappdata(0,'Tr',Tr);
 
+%获取绘图的axes,便于后续调用绘制图形
 fig=fig_1.Children(1);
 setappdata(0,'fig0',fig);
 
+%将robot设置为全局变量，便于调用
 global robot;
 
 %绘制主要功能区 
+
+%关节角度空间面板，用于正运动学演示，设置和显示关节角度
 global joint;
 joint = uipanel(fig_1,...
     'Position',[0.02 0.05  0.23 0.4],...
     'Title','关节角度','FontSize',11);
 
+%笛卡尔空间面板，用于显示机器人末端位姿和求解机器人末端位置
 global descar;
 descar=uipanel(fig_1,...
     'Position',[0.02 0.5 0.23 0.2],...
     'Title','末端位姿','FontSize',11);
 
+%功能面板，存储仿真系统的主要功能
 func=uipanel(fig_1,...
     'Position',[0.02 0.9 0.3 0.1],...
      'FontSize',11,'BorderType','none');
  
+ %轨迹导入面板，用于导入关节角度轨迹和末端轨迹
 global tracj_input;
 tracj_input=uipanel(fig_1,...
     'Position',[0.02 0.72 0.23 0.13],...
     'Title','轨迹导入','FontSize',11);
 
+%旋量显示面板，用于显示关节实时旋量，帮助佐证某些数据正确性
 global screw_display;
 screw_display=uipanel(fig_1,...
     'Position',[0.8 0.1 0.2 0.4],...
     'Title','实时旋量','FontSize',11);
 
+%运动学性能显示面板，显示运动学性能数据和
 global performance;
 performance=uipanel(fig_1,...
     'Position',[0.8 0.55 0.2 0.3],...
     'Title','运动学性能','FontSize',11);
 
+%仿真系统主要功能；具体函数实现查看相关函数
 input = uicontrol(func,'String','导入','callback',@input_button_press,...
-    'Position',[0 20 30 30]);
+    'Position',[0 20 30 30]);          %模型导入功能
 
 trail_delete = uicontrol(func,'String','删除轨迹','callback',@trail_delete_button_press,...
-    'Position',[60 20 50 30]);
+    'Position',[60 20 50 30]);          %轨迹清除功能
 
 home = uicontrol(func,'String','初始位置','callback',@home_button_press,...
-    'Position',[120 20 50 30]);
+    'Position',[120 20 50 30]);         %回到初始位置
 
 % 导入机器人的xml文件，并初始化相应界面
 function input_button_press(h,dummy)
 global robot joint descar tracj_input  screw_display performance;
-%清楚之前图像的控件
+%清除之前图像面板中的控件并保留面板
 delete(joint.Children);
 delete(descar.Children);
 delete(tracj_input.Children);
@@ -85,7 +98,7 @@ delete(performance.Children);
 
 %读取机器人的xml文件，并生成对应的机器人模型
 [filename, pathname] = uigetfile({'*.xml'},'File Selector'); %读取机器人xml文件
-robot=xml2robot3d_21(filename);%生成机器人函数
+robot=xml2robot3d_21(filename);%生成机器人的函数
 
 % 初始化界面并记录关节零位位置
 intial;
@@ -102,7 +115,7 @@ function intial
     n=robot.n;
     %绘制关节角度控制按钮
     LD = 105; % Left, used to set the GUI.
-    HT = 18;  % Height
+    HT = 18;  % 控件高度
     BT = 210; % Bottom
     qlim=robot.qlim;
     for i=1:n
@@ -139,29 +152,29 @@ function intial
         'Position',[115 10 50 20]);
     jiaodu_text = uibutton(descar,'style','text',...
         'String','角度(deg)','FontSize',10,...
-        'Position',[7 90 50 18]); 
+        'Position',[7 90 50 HT]); 
     tdr_text = uibutton(descar,'style','text',...
         'String','r',...
-        'Position',[10 70 30 18]);
+        'Position',[10 70 30 HT]);
     global tdr_edit tdp_edit tdyo_edit tdx_edit tdy_edit tdz_edit;
     tdr_edit = uicontrol(descar,'style','edit',...
         'String',0,...
         'callback',@tdr_edit_button_press,...
-        'Position',[30 70 30 18]);
+        'Position',[30 70 30 HT]);
     tdp_text = uibutton(descar,'style','text',...
         'String','p',...
-        'Position',[10 45 30 18]);
+        'Position',[10 45 30 HT]);
     tdp_edit = uicontrol(descar,'style','edit',...
         'String',0,...
         'callback',@tdp_edit_button_press,...
-        'Position',[30 45 30 18]);
+        'Position',[30 45 30 HT]);
     tdyo_text = uibutton(descar,'style','text',...
         'String','y',...
-        'Position',[10 20 30 18]);
+        'Position',[10 20 30 HT]);
     tdyo_edit = uicontrol(descar,'style','edit',...
         'String',0,...
         'callback',@tdyo_edit_button_press,...
-        'Position',[30 20 30 18]);
+        'Position',[30 20 30 HT]);
     %末端执行器位置绘制
     weizhi_text = uibutton(descar,'style','text',...
         'String','位置(mm)','FontSize',10,...
@@ -238,8 +251,9 @@ function intial
         eval(['twist',num2str(i),'_edit=temp_edit;']);
     end
     
-    %运动学性能控件绘制
+    %运动学性能控件绘制 需要补充
     global performance;
+    %可操作度
     manipulability_text=uibutton(performance,'style','text',...
         'String','manipulability',...
         'Position',[40 150 20 18]);
@@ -248,19 +262,23 @@ function intial
         'callback','@manipulability_edit_button_press',...
         'Position',[90 150 40 18],...
         'max',2);
-    manipulability_plot=uicontrol(performance,'String','显示','callback',@manipulability_button_press,...
+    manipulability_plot=uicontrol(performance,'String','显示','callback',@manipulability_plot_button_press,...
         'Position',[150 150 40 18]);
-
+    manipulability_clear=uicontrol(performance,'String','清除','callback',@manipulability_clear_button_press,...
+        'Position',[200 150 40 18]);
+    %条件数
     condition_number_text=uibutton(performance,'style','text',...
-        'String','条件数',...
-        'Position',[40 150-30 20 18]);
-   condition_number_edit=uicontrol(performance,'style','edit',...
+        'String','condition number',...
+        'Position',[30 150-30 20 18]);
+    condition_number_edit=uicontrol(performance,'style','edit',...
         'String',[0 0 0 0 0 0],...
         'callback','@condition_number_edit_button_press',...
         'Position',[90 150-30 40 18],...
         'max',2);
-   condition_number_plot=uicontrol(performance,'String','显示','callback',@condition_number_button_press,...
+    condition_number_plot=uicontrol(performance,'String','显示','callback',@condition_plot_number_button_press,...
         'Position',[150 150-30 40 18]);
+    condition_number_clear=uicontrol(performance,'String','清除','callback',@condition_clear_number_button_press,...
+        'Position',[200 150-30 40 18]);
     
      %绘制零位位置
     robotplot([robot.offset],'n');
@@ -394,7 +412,6 @@ end
 setappdata(0,'ThetaOld',theta);
 end
 
-
 %关节1修改函数
 function t1_slider_button_press(h,dummy)
 global t1_edit robot;
@@ -416,9 +433,9 @@ user_entry = check_edit(h,qlim(1,1),qlim(1,2),0,t1_edit);
 set(t1_slider,'Value',user_entry);
 q0=getappdata(0,'ThetaOld');
 if strcmp(robot.jolinks(1).jointtype,'R')
-    q0(3)=user_entry*pi/180;
+    q0(1)=user_entry*pi/180;
 else
-    q0(3)=user_entry;
+    q0(1)=user_entry;
 end
 robotanimation(q0,20,'n')
 end
@@ -849,5 +866,4 @@ function user_entry = check_edit(h,min_v,max_v,default,h_edit)
             user_entry = max_v;
             set(h_edit,'string',user_entry);
         end
-    end
-%
+end
