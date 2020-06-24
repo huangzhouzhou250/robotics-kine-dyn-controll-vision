@@ -9,6 +9,8 @@
 %tci_edit_button_press  参考角度编辑控件
 %tdx_edit_button_press,tdy_edit_button_press,tdz_edit_button_press末端执行器位置（x,y,z）编辑控件
 %tdr_edit_button_press，tdp_edit_button_press，tdyo_edit_button_press末端执行器角度（rpy）编辑控件
+% ikine_button_press逆运动学求解函数
+% tci_edit_button_press'%参考角度函数
 %ti_slider_button_press，ti_edit_button_press 关节i角度滑条控件和编辑控件
 
 %% 数据存储说明
@@ -23,6 +25,20 @@
 
 % setappdata(0,'ThetaOld',theta); %上一个状态的关节角度
 
+%末端执行器位置和姿态
+% setappdata(0,'descar_x',x_value);
+% setappdata(0,'descar_y',y_value);
+% setappdata(0,'descar_z',z_value);
+% setappdata(0,'descar_r',r_value);
+% setappdata(0,'descar_p',p_value);
+% setappdata(0,'descar_yo',yo_value);
+%参考角度
+% setappdata(0,'tc1',tc1_value);
+% setappdata(0,'tc2',tc2_value);
+% setappdata(0,'tc3',tc3_value);
+% setappdata(0,'tc4',tc4_value
+% setappdata(0,'tc5',tc5_value);
+% setappdata(0,'tc6',tc6_value);
 %% 需要加入的功能
 %1.根据机器人的大小绘图做出调整
 
@@ -30,6 +46,7 @@
 
 %3.状态空间导入机器人模型
 
+%4.逆运动学性能需要完善
 
 %% 辅助说明
      %图形绘制的另一种方式
@@ -51,3 +68,5 @@
 %     H=[H,Tr];
 %     setappdata(0,'patch_h',H);
 %     setappdata(0,'ThetaOld',zeros(1,n));
+
+%目前关节角度空间设置为8，感觉

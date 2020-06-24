@@ -185,4 +185,4 @@
 % 
 % p560xml = xml2robot3d_21('puma560.xml')
  ur5 = xml2robot3d_21('UR5.xml')
- scara=xml2robot3d_21('epsonG651S.xml')
+%  scara=xml2robot3d_21('epsonG651S.xml')

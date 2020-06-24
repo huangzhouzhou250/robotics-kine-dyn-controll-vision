@@ -119,9 +119,10 @@ classdef SerialManu < handle
              opt.T0=[];
              opt.plot3dopt = {};
              opt.ikine = {};
-             opt.faces={};
-             opt.points={};
-
+%              opt.faces={};
+%              opt.points={};
+             opt.faces=[];
+             opt.points=[];
              
              [opt,arg] = tb_optparse(opt, varargin);
                  

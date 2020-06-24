@@ -18,7 +18,7 @@ n=robot.n; %机器人连杆数目
 z0=[0,0,1]'; %基坐标系，z0的方向
 grav= robot.gravity; %重力加速度，可以设置
 fend = zeros(6, 1);%末端施加的载荷,W=[fx Fy Fz Mx My Mz]';
-debug1=0;%设置调试参数
+debug1=1;%设置调试参数
 debug2=0;
 if nargin>4%判断是否输入重力加速度
     grav=gravity;
@@ -89,12 +89,13 @@ for i=1:n
     %存储相关数据
     Fm=[Fm F];
     Nm=[Nm N];
+    if debug1==1
+        fprintf('w:');disp(w)
+        fprintf('acc:');disp([vd ;wd])
+        fprintf('\n');
+    end
 end
-if debug1==1
-    fprintf('Fm:');disp(Fm)
-    fprintf('Nm:');disp(Nm)
-    fprintf('\n');
-end
+
 %逆推求解关节力
 %获取末端力和力矩
 f_end=fend(:);
@@ -117,9 +118,9 @@ for i=n:-1:1
     fn=cross(r_rela+r,Fm(:,i))+Ri*(fn)+cross(r_rela,Ri*ff)+Nm(:,i);%计算关节输出力矩
     ff=Ri*ff+Fm(:,i);%计算关节输出力
     if debug2==1
-    fprintf('ff:');disp(ff)
-    fprintf('fn:');disp(fn)
-    fprintf('\n');
+        fprintf('ff:');disp(ff)
+        fprintf('fn:');disp(fn)
+        fprintf('\n');
     end
     Ri=R{i};
     switch link.type

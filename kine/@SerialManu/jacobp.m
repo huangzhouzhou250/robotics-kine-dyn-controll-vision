@@ -3,7 +3,7 @@
 %robot为机器人模型，为SerialLink类
 %q为机器人关节角度
 %var 用于声明机器人雅克比矩阵的类型包括：
-%s,基坐标系空间雅克比矩阵求解
+%s,基坐标系空间雅克比矩阵求解，默认类型
 %b，物体坐标系下的雅克比矩阵
 %d，基坐标系下的雅克比矩阵
 
@@ -14,7 +14,7 @@ if ~isa(robot,'SerialManu')
 end
 n=robot.n;
 %判断输入角度是否符合标准
-if size(q,2)~=n
+if size(q,2)~=n %此处使用size是为了以后扩展q从单一角度组到角度序列
     error('q must have %d column.',n);
 end
 %% 雅克比求解
