@@ -2,7 +2,6 @@
 %% 当动力学矩阵的系数太长无法输出时，可以储存为txt的格式，再复制。
 fid=fopen('h11.txt','wt');
  fprintf(fid,'%s\n',char(H(1,1)))
-
  %% 计时
  t1=clock;
  for i=1:100
