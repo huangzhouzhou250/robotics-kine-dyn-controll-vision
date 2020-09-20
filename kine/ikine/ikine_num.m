@@ -8,7 +8,7 @@ function [q,k,dis]=ikine_num(robot,Tg,q0)
 %q0为迭代的起始点，如果不输入，则为[0 0 0 0 0 0];
 n=robot.n; %获取机器人连杆数
 %设定初始角度
-qi=zeros(1,6);
+qi=zeros(1,n);
 if nargin==3
     qi=q0;
 end
@@ -25,21 +25,31 @@ dis2=1;
 while flag
     T0=robot.fkine(qi);%求解初始状态时位姿矩阵
     T0=T0.T;
-    T=Tg*inv(T0);
+    T=Tg/T0;
     v=T(1:3,4);         %求出变刚体变换对应的平移量
     w=vex(t2r(T)-eye(3)); %将机器人旋转矩阵转换为轴角的乘积
     delta=[v;w];        %合并为6维矢量
     dis1=norm(delta);    %求delta模长作为判断值
-    jaco=robot.jacob0(qi);  %求解机器人q0时的雅克比矩阵
-    det_j=abs(det(jaco));   %求解雅克比行列式的绝对值
+    jaco0=robot.jacob0(qi);  %求解机器人q0时的雅克比矩阵
+    if n<6
+        jaco=jaco0'*jaco0;
+    else
+        jaco=jaco0*jaco0';
+    end
+    det_j=sqrt(abs(det(jaco)));   %求解雅克比行列式的绝对值
      %根据det_j采取不同的迭代方法
     if  det_j>10^-4
-        temp=inv(jaco)*delta;
+        if n<6
+            jaco_inv=inv(jaco)*jaco0';
+        else  
+            jaco_inv=jaco0'*inv(jaco);
+        end
+        temp=jaco_inv*delta;
         alpha=1;
     else
         %奇异位置附近采用的方法
         lambda=0.01;
-        temp=jaco'*inv(jaco*jaco'+lambda*eye(6))*delta;
+        temp=jaco'*inv(jaco+lambda*eye(n))*delta;
         alpha=1.5;
     end
     if dis1>0.1
@@ -47,16 +57,18 @@ while flag
     else
         beta=0.92;
     end
+    
     qi=qi+alpha*temp'*beta;          %求解更新后的角度
-    for i=length(qi)
-        if qi(i)>=pi
-            qi(i)=qi(i)-2*pi;
-        elseif qi(i)<-pi
-            qi(i)=qi(i)+2*pi;
+    while ~(min(qi-ones(1,n)*-pi)>0 && min(ones(1,n)*pi-qi)>0)
+        for i=1:length(qi)
+            if qi(i)>=pi
+                qi(i)=qi(i)-2*pi;
+            elseif qi(i)<-pi
+                qi(i)=qi(i)+2*pi;
+            end
         end
-            
     end
-    if ((abs(dis2-dis1))<10^-6)||(k>1000)        %判断是否结束迭代
+    if ((abs(dis2-dis1))<10^-6)||(k>200)        %判断是否结束迭代
         flag=false;
     end
     dis2=dis1;

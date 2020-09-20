@@ -105,3 +105,30 @@
 % twistcross(twist1,twist2)
 
 
+%% ikine_numtest
+clc
+clear
+
+%六关节测试无误
+% mdl_ur5;
+% q=rand(1,6)*2*pi-pi;
+% T=ur5.fkine(q);
+% 
+% q1=q+[0.05 0.1 0 0.2 -0.1 0];
+% 
+% [qs,k,dis]=ikine_num(ur5,T,q1)
+% 
+% d1=100/1000;d2=20/1000;d3=90/1000;
+% a1=50/1000;a2=110/1000;
+% alpha1=pi/4;alpha2=-pi/7;
+% L1= Link('revolute', 'd', d1,     'a', a1,        'alpha', alpha1,'offset',0);
+% L2= Link('revolute', 'd', d2,         'a', a2,    'alpha', alpha2,'offset',0);
+% L3= Link('revolute', 'd', d3,         'a', 0,   'alpha', 0,'offset',0);
+% dof3=SerialLink([L1,L2,L3]);
+% 
+% q=rand(1,3)*2*pi-pi;
+% T=dof3.fkine(q)
+% [q1,k,dis] =ikine_num(dof3,T,q+[0.01 0.05 -0.007]);
+% T0=dof3.fkine(q1)
+
+%测试结果：尽量用mm作为单位
