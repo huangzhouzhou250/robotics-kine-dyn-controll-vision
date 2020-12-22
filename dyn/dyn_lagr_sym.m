@@ -1,4 +1,4 @@
-function [D,H,G,fv,fc]=dyn_lagr_sym(dhtable)
+function [D,H,G,fv,fc]=dyn_lagr_sym(dhtable,g)
 %此函数用拉格朗日动力学方法求解机器人动力学
 %求解均使用符号表达，目前只考虑旋转关节,不考虑电机的影响
 %[D,H,G,fv,fc]=dyn_lagr_sym(dhtable)
@@ -85,7 +85,11 @@ for i = 1:n
     end
 end
 %% 求解G(q)
-g_vec=[0,0,-gc,0]';
+if nargin ==1
+    g_vec=[0,0,-gc,0]';
+else
+    g_vec=g;
+end
 for i = 1:n
     g = 0;
     for j = i:n

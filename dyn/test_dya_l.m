@@ -220,15 +220,64 @@
 % vpa(tor,6)
 
 %% 动力学算法改进验证
-syms a2 a3 d3 d4 real;
-syms q1 q2 q3 q4 q5 q6 real;
+% syms a2 a3 d3 d4 real;
+% syms q1 q2 q3 q4 q5 q6 real;
+% 
+% dhtable= [pi/2,  0,  0,  0;
+%                0,  a2,  0,  0;
+%             -pi/2, a3, d3,  0;
+%              pi/2,  0, d4,  0;
+%             -pi/2,  0,  0,  0;
+%                 0,  0,  0,  0];
+%             
+%             
+% [D,H,G,fv,fc]=dyn_lagr_sym(dhtable);
 
-dhtable= [pi/2,  0,  0,  0;
-               0,  a2,  0,  0;
-            -pi/2, a3, d3,  0;
-             pi/2,  0, d4,  0;
-            -pi/2,  0,  0,  0;
-                0,  0,  0,  0];
-            
-            
-[D,H,G,fv,fc]=dyn_lagr_sym(dhtable);
+%% 两连杆动力学算法
+clc
+clear
+syms l1 l2 gc real;
+syms q1 q2 dq1 dq2 ddq1 ddq2 real;
+g=[gc,0,0,0]';
+dhtable=[0 l1 0 0;
+    0 l2 0,0;];
+[D,H,G,fv,fc]=dyn_lagr_sym(dhtable,g);
+
+Ix1=0;Iy1=0;Iz1=0;Ixx1=0;Iyy1=0;Izz1=0;
+Ix2=0;Iy2=0;Iz2=0;Ixx2=0;Iyy2=0;Izz2=0;
+
+% l1=0.25;l2=0.2;
+xc1=l1;xc2=l2;
+yc1=0;yc2=0;
+zc1=0;zc2=0;
+% 
+% m1=2;m2=1;
+% 
+% q1=pi/2;q2=pi/2;
+% dq1=0.1;dq2=0.2;
+% ddq1=1;ddq2=2;
+% gc=9.8;
+D=subs(D)
+H=subs(H)
+G=subs(G)
+
+tor=D*[ddq1;ddq2]+H*[dq1;dq2]+G;
+
+% l1=0.25;l2=0.2;
+% L1= Link('revolute', 'd', 0,     'a',l1,        'alpha',0,'offset',0,'r',[l1 0 0]','m',2);
+% L2= Link('revolute', 'd', 0,         'a',l2,    'alpha', 0,'offset',0,'r',[l2 0 0],'m',1);
+% tlink=SerialLink([L1,L2],'gravity',[-gc 0 0]);
+% q=[q1,q2];dq=[dq1,dq2];ddq=[ddq1,ddq2];
+% tlink.rne(q,dq,ddq)
+% vpa(tor,4)
+
+
+
+%结果
+D = [ 4*l1^2*m1 + l1^2*m2 + 4*l2^2*m2 + 4*l1*l2*m2*cos(q2), 4*m2*l2^2 + 2*l1*m2*cos(q2)*l2;
+                       4*m2*l2^2 + 2*l1*m2*cos(q2)*l2,                      4*l2^2*m2];
+ H =[ -2*dq2*l1*l2*m2*sin(q2), -2*l1*l2*m2*sin(q2)*(dq1 + dq2);
+ 2*dq1*l1*l2*m2*sin(q2),                               0]  ;
+G=[ gc*m2*(l2*sin(q1 + q2) + l1*sin(q1)) + gc*l2*m2*sin(q1 + q2) + 2*gc*l1*m1*sin(q1);
+                                                           2*gc*l2*m2*sin(q1 + q2)];
+

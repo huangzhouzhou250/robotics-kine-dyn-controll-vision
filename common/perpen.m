@@ -1,4 +1,4 @@
-%line=perpen(twist1,twist2) 用于求解两个函数的公垂线
+%line=perpen(twist1,twist2) 用于求解两个旋量的公垂线
 %输入为旋量格式或者w+p（轴线的方向和轴线上一点）
 %输出会根据输入的格式选择
 
